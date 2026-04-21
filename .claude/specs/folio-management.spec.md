@@ -1,9 +1,10 @@
 ---
 id: SPEC-002
-status: APPROVED
+status: IMPLEMENTED
 feature: folio-management
 created: 2026-04-21
 updated: 2026-04-21
+implemented: 2026-04-21
 approved: 2026-04-21
 author: spec-generator
 version: "1.0"

@@ -7,10 +7,12 @@ import com.sofka.insurancequoter.back.folio.infrastructure.adapter.out.persisten
 import com.sofka.insurancequoter.back.folio.infrastructure.adapter.out.persistence.mappers.QuotePersistenceMapper;
 import com.sofka.insurancequoter.back.folio.infrastructure.adapter.out.persistence.repositories.QuoteJpaRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
 // Adapter: implements the QuoteRepository output port using Spring Data JPA
+@Component
 @RequiredArgsConstructor
 public class QuoteJpaAdapter implements QuoteRepository {
 

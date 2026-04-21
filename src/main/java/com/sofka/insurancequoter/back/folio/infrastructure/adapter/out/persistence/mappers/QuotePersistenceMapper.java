@@ -4,7 +4,10 @@ import com.sofka.insurancequoter.back.folio.domain.model.Quote;
 import com.sofka.insurancequoter.back.folio.domain.model.QuoteStatus;
 import com.sofka.insurancequoter.back.folio.infrastructure.adapter.out.persistence.entities.QuoteJpa;
 
+import org.springframework.stereotype.Component;
+
 // Converts between the domain model (Quote) and the JPA entity (QuoteJpa)
+@Component
 public class QuotePersistenceMapper {
 
     public QuoteJpa toJpa(Quote quote) {
