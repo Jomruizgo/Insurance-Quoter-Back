@@ -1,37 +1,53 @@
 ---
 name: implement-backend
-description: Implementa un feature completo en el backend. Requiere spec con status APPROVED en .claude/specs/.
+description: Implementa un feature completo en el backend con TDD. Requiere spec con status APPROVED en .claude/specs/.
 argument-hint: "<nombre-feature>"
 ---
 
 # Implement Backend
 
 ## Prerequisitos
-1. Leer spec: `.claude/specs/<feature>.spec.md` — sección 2 (modelos, endpoints)
-2. Leer stack: `.claude/rules/backend.md`
-3. Leer arquitectura: `.claude/rules/backend.md`
+1. Leer spec: `.claude/specs/<feature>.spec.md` — secciones 2 y 3 (diseño + lista de tareas)
+2. Leer stack y arquitectura: `.claude/rules/backend.md`
+3. Verificar autenticación `gh auth status` — se necesita para cerrar issues
 
-## Orden de implementación
+## Metodología: TDD obligatorio
+
+**Cada clase de lógica se implementa en este ciclo, sin excepciones:**
+
 ```
-models → repositories → services → routes → registrar en punto de entrada
+1. RED   — escribir el test unitario (falla porque la clase aún no existe)
+2. GREEN — escribir el mínimo código que hace pasar el test
+3. REFACTOR — limpiar sin romper el test
 ```
 
-| Capa | Responsabilidad |
-|------|-----------------|
-| **Models / Schemas** | Validación de tipos e input/output (Create, Update, Response, Document) |
-| **Repositories** | Acceso a DB — queries CRUD sin lógica de negocio |
-| **Services** | Lógica de negocio pura — orquesta repositorios |
-| **Routes / Controllers** | Parsing HTTP + DI + delegar al service |
+**Orden de implementación por capa:**
 
-## Patrón de DI (obligatorio en routes)
-- Inyectar dependencias en la firma del handler (no instanciar inline en el cuerpo)
-- El service recibe el repo por parámetro; el router instancia ambos
+```
+migración DB → dominio (model + ports) → application (use case) → persistence adapter → REST adapter → config
+```
 
-Ver patrones específicos del stack en `.claude/rules/backend.md`.
+Para cada capa:
+1. Escribir primero el test (`src/test/java/...`)
+2. Luego crear la clase de producción (`src/main/java/...`)
+3. Verificar que el test pasa (`./gradlew test --tests <NombreTest>`)
+4. Cerrar el GitHub Issue correspondiente con `gh issue close <N> --comment "implemented"`
 
-## Reglas
-Ver `.claude/rules/backend.md` — async, naming, errores, timestamps.
+## Cierre de issues
+
+Cada tarea de la sección `## 3. LISTA DE TAREAS` de la spec tiene un GitHub Issue asociado.
+Al completar cada tarea (test verde + código limpio), cerrar el issue correspondiente:
+
+```bash
+gh issue close <N> --comment "implemented"
+```
+
+Al final del feature, todos los issues de implementación y tests deben estar cerrados.
 
 ## Restricciones
-- Solo `backend/` (o equivalente del proyecto). No tocar `frontend/`.
-- No generar tests (responsabilidad de `test-engineer-backend`).
+- Solo `src/` del proyecto backend asignado. No tocar frontend.
+- Test unitario **siempre antes** del código de producción — nunca al revés.
+- No delegar los tests a otro agente; son parte del ciclo TDD de este skill.
+- `@Autowired` prohibido — inyección por constructor siempre.
+- Swagger (`@Tag`, `@Operation`) solo en interfaces `swaggerdocs/*Api.java`, nunca en controllers.
+- Domain models sin anotaciones JPA ni Spring.

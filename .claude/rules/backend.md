@@ -145,12 +145,100 @@ public class QuoteJpaAdapter implements QuoteRepository { // implementa output p
 | JPA Adapter | `<Entity>JpaAdapter.java` | `QuoteJpaAdapter.java` |
 | JPA Entity | `<Entity>Jpa.java` | `QuoteJpa.java` |
 | REST Controller | `<Context>Controller.java` | `FolioController.java` |
+| Swagger interface | `<Context>Api.java` (en `rest/swaggerdocs/`) | `FolioApi.java` |
 | DTO Request | `<Action>Request.java` | `CreateFolioRequest.java` |
 | DTO Response | `<Context>Response.java` | `FolioResponse.java` |
 | Test | `<Clase>Test.java` | `CreateFolioUseCaseImplTest.java` |
 
+## Inyección de dependencias
+
+Usar **siempre** inyección por constructor. Prohibido `@Autowired`.
+
+```java
+// CORRECTO — Lombok genera el constructor
+@Service
+@RequiredArgsConstructor
+public class CreateFolioUseCaseImpl implements CreateFolioUseCase {
+    private final QuoteRepository quoteRepository;
+    private final CoreServiceClient coreServiceClient;
+}
+
+// CORRECTO — constructor explícito (sin Lombok)
+@RestController
+public class FolioController {
+    private final CreateFolioUseCase createFolioUseCase;
+
+    public FolioController(CreateFolioUseCase createFolioUseCase) {
+        this.createFolioUseCase = createFolioUseCase;
+    }
+}
+
+// PROHIBIDO
+@Autowired
+private CreateFolioUseCase createFolioUseCase;
+```
+
+---
+
+## OpenAPI / Swagger
+
+Las anotaciones Swagger **nunca van en el controller**. Se declaran en una interfaz dentro del subpaquete `rest/swaggerdocs/`. El controller implementa esa interfaz y queda limpio.
+
+### Estructura
+
+```
+infrastructure/adapter/in/rest/
+├── swaggerdocs/
+│   └── FolioApi.java       ← @Tag, @Operation, @ApiResponse aquí
+└── FolioController.java    ← implements FolioApi, sin anotaciones Swagger
+```
+
+### Ejemplo
+
+```java
+// infrastructure/adapter/in/rest/swaggerdocs/FolioApi.java
+@Tag(name = "Folios", description = "Gestión de folios de cotización")
+@RequestMapping("/v1/folios")
+public interface FolioApi {
+
+    @Operation(summary = "Crear o recuperar folio")
+    @ApiResponses({
+        @ApiResponse(responseCode = "201", description = "Folio creado"),
+        @ApiResponse(responseCode = "200", description = "Folio existente recuperado"),
+        @ApiResponse(responseCode = "422", description = "Datos inválidos")
+    })
+    @PostMapping
+    ResponseEntity<FolioResponse> createFolio(@Valid @RequestBody CreateFolioRequest request);
+}
+
+// infrastructure/adapter/in/rest/FolioController.java
+@RestController
+@RequiredArgsConstructor
+public class FolioController implements FolioApi {
+    private final CreateFolioUseCase createFolioUseCase;
+
+    @Override
+    public ResponseEntity<FolioResponse> createFolio(CreateFolioRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(createFolioUseCase.createFolio(request));
+    }
+}
+```
+
+### Nomenclatura
+
+| Artefacto | Convención | Ejemplo |
+|-----------|-----------|---------|
+| Swagger interface | `<Context>Api.java` | `FolioApi.java` |
+
+Swagger UI: `http://localhost:<puerto>/swagger-ui/index.html`
+
+---
+
 ## Anti-patrones Prohibidos
 
+- `@Autowired` — usar constructor injection con `@RequiredArgsConstructor` o constructor explícito
+- Anotaciones Swagger (`@Tag`, `@Operation`, `@ApiResponse`) en controllers — van en `rest/swaggerdocs/<Context>Api.java`
 - Anotaciones JPA en domain models (van solo en las entidades JPA de persistence adapter)
 - Lógica de negocio en controllers o adapters de persistencia
 - Domain models expuestos directamente en responses API (siempre mapear a DTO)
