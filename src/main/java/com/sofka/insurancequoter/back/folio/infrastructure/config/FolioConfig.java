@@ -1,0 +1,33 @@
+package com.sofka.insurancequoter.back.folio.infrastructure.config;
+
+import com.sofka.insurancequoter.back.folio.application.usecase.CreateFolioUseCaseImpl;
+import com.sofka.insurancequoter.back.folio.domain.port.in.CreateFolioUseCase;
+import com.sofka.insurancequoter.back.folio.domain.port.out.CoreServiceClient;
+import com.sofka.insurancequoter.back.folio.domain.port.out.QuoteRepository;
+import com.sofka.insurancequoter.back.folio.infrastructure.adapter.out.http.adapter.CoreServiceClientAdapter;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestClient;
+
+@Configuration
+public class FolioConfig {
+
+    @Bean
+    public RestClient coreRestClient(@Value("${core.service.base-url}") String baseUrl) {
+        return RestClient.builder()
+                .baseUrl(baseUrl)
+                .build();
+    }
+
+    @Bean
+    public CoreServiceClient coreServiceClient(RestClient coreRestClient) {
+        return new CoreServiceClientAdapter(coreRestClient);
+    }
+
+    @Bean
+    public CreateFolioUseCase createFolioUseCase(QuoteRepository quoteRepository,
+                                                  CoreServiceClient coreServiceClient) {
+        return new CreateFolioUseCaseImpl(quoteRepository, coreServiceClient);
+    }
+}

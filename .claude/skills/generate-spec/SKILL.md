@@ -25,8 +25,18 @@ Si el requerimiento no cumple el DoR → listar las preguntas pendientes antes d
 2. Lee las rules: `.claude/rules/backend.md`, `.claude/rules/frontend.md`, `.claude/rules/database.md`
 3. Explora código existente — no duplicar modelos ni endpoints existentes
 4. Valida DoR (arriba) — si hay ambigüedades, lista preguntas antes de continuar
-5. Usa plantilla: `.github/skills/generate-spec/spec-template.md` EXACTAMENTE
-6. Guarda en `.claude/specs/<nombre-en-kebab-case>.spec.md`
+5. **Crea rama gitflow** antes de escribir cualquier archivo:
+   ```bash
+   git checkout main && git pull
+   git checkout -b feature/<nombre-feature>
+   ```
+6. Usa plantilla: `.github/skills/generate-spec/spec-template.md` EXACTAMENTE
+7. Guarda en `.claude/specs/<nombre-en-kebab-case>.spec.md`
+8. Commitea la spec en la rama:
+   ```bash
+   git add .claude/specs/<nombre-feature>.spec.md
+   git commit -m "spec: add <nombre-feature> SPEC-### (DRAFT)"
+   ```
 
 ## Frontmatter obligatorio
 

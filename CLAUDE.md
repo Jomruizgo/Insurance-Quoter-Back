@@ -49,3 +49,7 @@ Notas y recomendaciones
 - Adaptaciones del proyecto: en este repositorio sustituiremos nombres de paquetes, endpoints y puertos por los que correspondan (p. ej. `/api/v1/folios` versus `/v1/folios`). Este archivo es una guía conceptual, no un mapeo literal.
 
 Si quieres, hago commit y push del archivo ahora, y/o lo adapto a nombres concretos del proyecto.
+
+## Agentes
+
+Los agentes custom del proyecto viven en `.claude/agents/`. Siempre usar estos agentes — **nunca** los de `.github/`, que son para GitHub Copilot.
