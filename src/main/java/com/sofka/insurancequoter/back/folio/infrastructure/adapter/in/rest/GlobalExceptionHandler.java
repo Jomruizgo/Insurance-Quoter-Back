@@ -1,5 +1,6 @@
 package com.sofka.insurancequoter.back.folio.infrastructure.adapter.in.rest;
 
+import com.sofka.insurancequoter.back.coverage.application.usecase.exception.InvalidCoverageCodeException;
 import com.sofka.insurancequoter.back.folio.application.usecase.CoreServiceException;
 import com.sofka.insurancequoter.back.folio.application.usecase.InvalidReferenceException;
 import com.sofka.insurancequoter.back.location.application.usecase.FolioNotFoundException;
@@ -88,6 +89,19 @@ public class GlobalExceptionHandler {
                         "error", "Validation failed",
                         "code", "VALIDATION_ERROR",
                         "fields", List.of(ex.getMessage())
+                ));
+    }
+
+    @ExceptionHandler(InvalidCoverageCodeException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidCoverageCode(InvalidCoverageCodeException ex) {
+        return ResponseEntity.status(422)
+                .body(Map.of(
+                        "error", "Validation failed",
+                        "code", "VALIDATION_ERROR",
+                        "fields", List.of(Map.of(
+                                "field", "coverageOptions[].code",
+                                "message", ex.getMessage()
+                        ))
                 ));
     }
 
