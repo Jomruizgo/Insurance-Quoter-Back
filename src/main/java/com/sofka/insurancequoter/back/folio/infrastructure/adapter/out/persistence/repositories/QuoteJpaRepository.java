@@ -13,4 +13,6 @@ public interface QuoteJpaRepository extends JpaRepository<QuoteJpa, Long> {
             String agentCode,
             String quoteStatus
     );
+
+    Optional<QuoteJpa> findByFolioNumber(String folioNumber);
 }

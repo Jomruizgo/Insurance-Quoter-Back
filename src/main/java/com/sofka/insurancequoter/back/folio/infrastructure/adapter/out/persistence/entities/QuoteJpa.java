@@ -31,6 +31,12 @@ public class QuoteJpa {
     @Column(name = "agent_code", nullable = false, length = 50)
     private String agentCode;
 
+    @Column(name = "number_of_locations")
+    private Integer numberOfLocations;
+
+    @Column(name = "location_type", length = 10)
+    private String locationType;
+
     @Version
     @Column(name = "version", nullable = false)
     private Long version;
