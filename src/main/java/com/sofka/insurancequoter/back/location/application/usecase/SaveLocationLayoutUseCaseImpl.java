@@ -61,7 +61,11 @@ public class SaveLocationLayoutUseCaseImpl implements SaveLocationLayoutUseCase 
             if (requested > maxExistingIndex) {
                 List<Location> newLocations = new ArrayList<>();
                 for (int i = maxExistingIndex + 1; i <= requested; i++) {
-                    newLocations.add(new Location(i, true));
+                    newLocations.add(new Location(i, true, null, null, null,
+                            null, null, null, null, null, null, null,
+                            null, null, null,
+                            com.sofka.insurancequoter.back.location.domain.model.ValidationStatus.INCOMPLETE,
+                            java.util.List.of()));
                 }
                 locationRepository.insertAll(existing.id(), newLocations);
             }
