@@ -1,6 +1,6 @@
 ---
 id: SPEC-007
-status: APPROVED
+status: IMPLEMENTED
 feature: premium-calculation
 created: 2026-04-22
 updated: 2026-04-22
