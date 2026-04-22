@@ -53,3 +53,11 @@ Si quieres, hago commit y push del archivo ahora, y/o lo adapto a nombres concre
 ## Agentes
 
 Los agentes custom del proyecto viven en `.claude/agents/`. Siempre usar estos agentes — **nunca** los de `.github/`, que son para GitHub Copilot.
+
+## Contexto de trabajo
+
+El IDE y Claude Code se abren **siempre desde `Insurance-Quoter-Back/`**. Por tanto:
+
+- La documentación técnica del backend (reality checks, ADRs, guías) va en `Insurance-Quoter-Back/docs/`.
+- Las specs ASDD van en `Insurance-Quoter-Back/.claude/specs/`.
+- No guardar documentación en `Sofka-IQ/docs/` desde este contexto — ese directorio es para artefactos del monorepo que se editan abriendo `Sofka-IQ/` directamente.
