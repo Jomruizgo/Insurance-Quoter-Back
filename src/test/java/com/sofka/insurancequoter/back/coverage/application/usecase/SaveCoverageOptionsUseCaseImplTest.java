@@ -82,7 +82,7 @@ class SaveCoverageOptionsUseCaseImplTest {
         doNothing().when(quoteLookupPort).assertFolioExists(FOLIO);
         doNothing().when(quoteLookupPort).assertVersionMatches(FOLIO, 5L);
         when(guaranteeCatalogClient.fetchGuarantees()).thenReturn(
-                List.of(new GuaranteeDto("GUA-FIRE", "Incendio edificios"))
+                List.of(new GuaranteeDto("GUA-FIRE", "Incendio edificios", true))
         );
         CoverageOption invalid = new CoverageOption("COV-INVALID", null, true, BigDecimal.ZERO, BigDecimal.ZERO);
         SaveCoverageOptionsCommand command = new SaveCoverageOptionsCommand(FOLIO, List.of(invalid), 5L);
@@ -102,8 +102,8 @@ class SaveCoverageOptionsUseCaseImplTest {
         doNothing().when(quoteLookupPort).assertFolioExists(FOLIO);
         doNothing().when(quoteLookupPort).assertVersionMatches(FOLIO, 6L);
         when(guaranteeCatalogClient.fetchGuarantees()).thenReturn(List.of(
-                new GuaranteeDto("GUA-FIRE", "Incendio edificios"),
-                new GuaranteeDto("GUA-THEFT", "Robo")
+                new GuaranteeDto("GUA-FIRE", "Incendio edificios", true),
+                new GuaranteeDto("GUA-THEFT", "Robo", true)
         ));
         List<CoverageOption> input = List.of(
                 new CoverageOption("GUA-FIRE", null, true, new BigDecimal("2.0"), new BigDecimal("80.0")),
@@ -165,8 +165,8 @@ class SaveCoverageOptionsUseCaseImplTest {
         doNothing().when(quoteLookupPort).assertFolioExists(FOLIO);
         doNothing().when(quoteLookupPort).assertVersionMatches(FOLIO, 6L);
         when(guaranteeCatalogClient.fetchGuarantees()).thenReturn(List.of(
-                new GuaranteeDto("GUA-FIRE", "Incendio edificios"),
-                new GuaranteeDto("GUA-THEFT", "Robo")
+                new GuaranteeDto("GUA-FIRE", "Incendio edificios", true),
+                new GuaranteeDto("GUA-THEFT", "Robo", true)
         ));
         List<CoverageOption> input = List.of(
                 new CoverageOption("GUA-FIRE", null, true, BigDecimal.ZERO, BigDecimal.ZERO),
