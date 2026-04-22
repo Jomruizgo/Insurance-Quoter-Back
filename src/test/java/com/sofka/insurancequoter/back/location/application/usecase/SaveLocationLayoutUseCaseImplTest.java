@@ -3,6 +3,7 @@ package com.sofka.insurancequoter.back.location.application.usecase;
 import com.sofka.insurancequoter.back.location.domain.model.LayoutConfiguration;
 import com.sofka.insurancequoter.back.location.domain.model.Location;
 import com.sofka.insurancequoter.back.location.domain.model.LocationType;
+import com.sofka.insurancequoter.back.location.domain.model.ValidationStatus;
 import com.sofka.insurancequoter.back.location.domain.port.out.LocationRepository;
 import com.sofka.insurancequoter.back.location.domain.port.out.QuoteLayoutRepository;
 import org.junit.jupiter.api.Test;
@@ -36,6 +37,13 @@ class SaveLocationLayoutUseCaseImplTest {
     private SaveLocationLayoutUseCaseImpl useCase;
 
     private static final Instant NOW = Instant.parse("2026-04-21T10:00:00Z");
+
+    // Helper to build minimal Location domain objects for layout tests
+    private static Location loc(int index, boolean active) {
+        return new Location(index, active, null, null, null,
+                null, null, null, null, null, null, null,
+                null, null, null, ValidationStatus.INCOMPLETE, List.of());
+    }
 
     private QuoteLayoutData quoteData(Long id, Integer currentLocations, String currentType, Long version) {
         return new QuoteLayoutData(id, "FOL-2026-00042", currentLocations, currentType, version, NOW);
@@ -79,8 +87,7 @@ class SaveLocationLayoutUseCaseImplTest {
         // GIVEN
         var existing = quoteData(10L, 2, "MULTIPLE", 3L);
         when(quoteLayoutRepository.findByFolioNumber("FOL-2026-00042")).thenReturn(Optional.of(existing));
-        when(locationRepository.findAllByQuoteId(10L))
-                .thenReturn(List.of(new Location(1, true), new Location(2, true)));
+        when(locationRepository.findAllByQuoteId(10L)).thenReturn(List.of(loc(1, true), loc(2, true)));
         when(quoteLayoutRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         var command = new SaveLayoutCommand(
@@ -108,11 +115,7 @@ class SaveLocationLayoutUseCaseImplTest {
         var existing = quoteData(10L, 4, "MULTIPLE", 4L);
         when(quoteLayoutRepository.findByFolioNumber("FOL-2026-00042")).thenReturn(Optional.of(existing));
         when(locationRepository.findAllByQuoteId(10L))
-                .thenReturn(List.of(
-                        new Location(1, true),
-                        new Location(2, true),
-                        new Location(3, true),
-                        new Location(4, true)));
+                .thenReturn(List.of(loc(1, true), loc(2, true), loc(3, true), loc(4, true)));
         when(quoteLayoutRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         var command = new SaveLayoutCommand(
@@ -139,11 +142,7 @@ class SaveLocationLayoutUseCaseImplTest {
         var existing = quoteData(10L, 2, "MULTIPLE", 5L);
         when(quoteLayoutRepository.findByFolioNumber("FOL-2026-00042")).thenReturn(Optional.of(existing));
         when(locationRepository.findAllByQuoteId(10L))
-                .thenReturn(List.of(
-                        new Location(1, true),
-                        new Location(2, true),
-                        new Location(3, false),
-                        new Location(4, false)));
+                .thenReturn(List.of(loc(1, true), loc(2, true), loc(3, false), loc(4, false)));
         when(quoteLayoutRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         var command = new SaveLayoutCommand(
@@ -170,10 +169,7 @@ class SaveLocationLayoutUseCaseImplTest {
         var existing = quoteData(10L, 1, "MULTIPLE", 6L);
         when(quoteLayoutRepository.findByFolioNumber("FOL-2026-00042")).thenReturn(Optional.of(existing));
         when(locationRepository.findAllByQuoteId(10L))
-                .thenReturn(List.of(
-                        new Location(1, true),
-                        new Location(2, false),
-                        new Location(3, false)));
+                .thenReturn(List.of(loc(1, true), loc(2, false), loc(3, false)));
         when(quoteLayoutRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         var command = new SaveLayoutCommand(
@@ -202,10 +198,7 @@ class SaveLocationLayoutUseCaseImplTest {
         var existing = quoteData(10L, 3, "MULTIPLE", 2L);
         when(quoteLayoutRepository.findByFolioNumber("FOL-2026-00042")).thenReturn(Optional.of(existing));
         when(locationRepository.findAllByQuoteId(10L))
-                .thenReturn(List.of(
-                        new Location(1, true),
-                        new Location(2, true),
-                        new Location(3, true)));
+                .thenReturn(List.of(loc(1, true), loc(2, true), loc(3, true)));
         when(quoteLayoutRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         var command = new SaveLayoutCommand(

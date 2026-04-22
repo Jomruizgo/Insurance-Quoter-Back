@@ -49,7 +49,11 @@ class LocationPersistenceMapperTest {
     @Test
     void shouldMapLocationToJpa_withActiveTrue() {
         // GIVEN
-        Location location = new Location(2, true);
+        Location location = new Location(2, true, null, null, null,
+                null, null, null, null, null, null, null,
+                null, null, null,
+                com.sofka.insurancequoter.back.location.domain.model.ValidationStatus.INCOMPLETE,
+                java.util.List.of());
 
         // WHEN
         LocationJpa jpa = mapper.toLocationJpa(42L, location);

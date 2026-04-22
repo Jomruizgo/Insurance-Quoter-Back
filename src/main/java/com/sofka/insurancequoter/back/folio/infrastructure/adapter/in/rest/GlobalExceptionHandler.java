@@ -3,6 +3,8 @@ package com.sofka.insurancequoter.back.folio.infrastructure.adapter.in.rest;
 import com.sofka.insurancequoter.back.folio.application.usecase.CoreServiceException;
 import com.sofka.insurancequoter.back.folio.application.usecase.InvalidReferenceException;
 import com.sofka.insurancequoter.back.location.application.usecase.FolioNotFoundException;
+import com.sofka.insurancequoter.back.location.application.usecase.LocationNotFoundException;
+import com.sofka.insurancequoter.back.location.application.usecase.VersionConflictException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -27,6 +29,24 @@ public class GlobalExceptionHandler {
                 .body(Map.of(
                         "error", "Folio not found",
                         "code", "FOLIO_NOT_FOUND"
+                ));
+    }
+
+    @ExceptionHandler(VersionConflictException.class)
+    public ResponseEntity<Map<String, String>> handleVersionConflict(VersionConflictException ex) {
+        return ResponseEntity.status(409)
+                .body(Map.of(
+                        "error", "Optimistic lock conflict",
+                        "code", "VERSION_CONFLICT"
+                ));
+    }
+
+    @ExceptionHandler(LocationNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleLocationNotFound(LocationNotFoundException ex) {
+        return ResponseEntity.status(404)
+                .body(Map.of(
+                        "error", "Location index not found",
+                        "code", "LOCATION_NOT_FOUND"
                 ));
     }
 
