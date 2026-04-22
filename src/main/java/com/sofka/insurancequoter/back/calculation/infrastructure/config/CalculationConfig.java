@@ -19,7 +19,10 @@ import com.sofka.insurancequoter.back.location.infrastructure.adapter.out.persis
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestClient;
+
+import java.time.Duration;
 
 // Wires the calculation bounded context: domain service, use case, persistence adapter, HTTP client
 @Configuration
@@ -32,8 +35,16 @@ public class CalculationConfig {
 
     @Bean
     public TariffClient tariffClient(
-            @Value("${core.service.base-url:http://localhost:8081}") String baseUrl) {
-        RestClient restClient = RestClient.builder().baseUrl(baseUrl).build();
+            @Value("${core.service.base-url:http://localhost:8081}") String baseUrl,
+            @Value("${core.service.connect-timeout-ms:5000}") int connectTimeoutMs,
+            @Value("${core.service.read-timeout-ms:10000}") int readTimeoutMs) {
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(Duration.ofMillis(connectTimeoutMs));
+        factory.setReadTimeout(Duration.ofMillis(readTimeoutMs));
+        RestClient restClient = RestClient.builder()
+                .baseUrl(baseUrl)
+                .requestFactory(factory)
+                .build();
         return new TariffClientAdapter(restClient);
     }
 

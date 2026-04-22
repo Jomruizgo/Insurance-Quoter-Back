@@ -62,13 +62,19 @@ public class CalculationService {
 
         BigDecimal fireBuildings = calculateFireBuildings(location, tariff);
         BigDecimal fireContents = calculateFireContents(location, tariff);
-        BigDecimal firePremium = fireBuildings.add(fireContents);
 
-        BigDecimal coverageExtension = calculateCoverageExtension(firePremium, tariff);
-        BigDecimal cattev = calculateCattev(firePremium, tariff);
-        BigDecimal catfhm = calculateCatfhm(firePremium, tariff);
-        BigDecimal debrisRemoval = calculateDebrisRemoval(firePremium, tariff);
-        BigDecimal extraordinaryExpenses = calculateExtraordinaryExpenses(firePremium, tariff);
+        // Intermediate-scale fire sum: avoids propagating rounding error into derived components
+        BigDecimal firePremiumIntermediate = sumInsuredValueByCode(location, "GUA-FIRE")
+                .multiply(tariff.fireRate())
+                .add(sumInsuredValueByCode(location, "GUA-FIRE-CONT")
+                        .multiply(tariff.fireContentsRate()))
+                .setScale(INTERMEDIATE_SCALE, ROUNDING);
+
+        BigDecimal coverageExtension = calculateCoverageExtension(firePremiumIntermediate, tariff);
+        BigDecimal cattev = calculateCattev(firePremiumIntermediate, tariff);
+        BigDecimal catfhm = calculateCatfhm(firePremiumIntermediate, tariff);
+        BigDecimal debrisRemoval = calculateDebrisRemoval(firePremiumIntermediate, tariff);
+        BigDecimal extraordinaryExpenses = calculateExtraordinaryExpenses(firePremiumIntermediate, tariff);
         BigDecimal rentalLoss = calculateRentalLoss(location, tariff);
         BigDecimal businessInterruption = calculateBusinessInterruption(location, tariff);
         BigDecimal electronicEquipment = calculateElectronicEquipment(location, tariff);
@@ -109,14 +115,13 @@ public class CalculationService {
         );
     }
 
-    // Sums insured values for all guarantees matching the given code
+    // Sums insured values for all guarantees matching the given code; null insuredValues are skipped
     private BigDecimal sumInsuredValueByCode(Location location, String code) {
-        if (location.guarantees() == null) return BigDecimal.ZERO.setScale(RESULT_SCALE, ROUNDING);
+        if (location.guarantees() == null) return BigDecimal.ZERO;
         return location.guarantees().stream()
-                .filter(g -> code.equals(g.code()))
+                .filter(g -> code.equals(g.code()) && g.insuredValue() != null)
                 .map(Guarantee::insuredValue)
-                .reduce(BigDecimal.ZERO, BigDecimal::add)
-                .setScale(RESULT_SCALE, ROUNDING);
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     private BigDecimal calculateFireBuildings(Location location, Tariff tariff) {

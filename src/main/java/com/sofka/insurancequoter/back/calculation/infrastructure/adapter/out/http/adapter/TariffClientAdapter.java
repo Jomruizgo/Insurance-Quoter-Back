@@ -34,6 +34,7 @@ public class TariffClientAdapter implements TariffClient {
             }
 
             TariffData data = response.tariffs();
+            validateTariffFields(data);
             return new Tariff(
                     data.fireRate(),
                     data.fireContentsRate(),
@@ -55,6 +56,19 @@ public class TariffClientAdapter implements TariffClient {
             throw ex;
         } catch (Exception ex) {
             throw new CoreServiceException("Core service unavailable fetching tariffs: " + ex.getMessage());
+        }
+    }
+
+    private void validateTariffFields(TariffData data) {
+        if (data.fireRate() == null || data.fireContentsRate() == null ||
+                data.coverageExtensionFactor() == null || data.cattevFactor() == null ||
+                data.catfhmFactor() == null || data.debrisRemovalFactor() == null ||
+                data.extraordinaryExpensesFactor() == null || data.rentalLossRate() == null ||
+                data.businessInterruptionRate() == null || data.electronicEquipmentRate() == null ||
+                data.theftRate() == null || data.cashAndValuesRate() == null ||
+                data.glassRate() == null || data.luminousSignageRate() == null ||
+                data.commercialFactor() == null) {
+            throw new CoreServiceException("Core service returned incomplete tariff data: one or more rate fields are null");
         }
     }
 }

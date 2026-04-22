@@ -13,7 +13,7 @@ public interface CalculationResultJpaRepository extends JpaRepository<Calculatio
 
     Optional<CalculationResultJpa> findByQuoteId(Long quoteId);
 
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Query("DELETE FROM CalculationResultJpa c WHERE c.quote.id = :quoteId")
     void deleteByQuoteId(@Param("quoteId") Long quoteId);
 }
