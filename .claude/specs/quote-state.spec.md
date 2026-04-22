@@ -1,6 +1,6 @@
 ---
 id: SPEC-005
-status: APPROVED
+status: IMPLEMENTED
 feature: quote-state
 created: 2026-04-21
 updated: 2026-04-21
