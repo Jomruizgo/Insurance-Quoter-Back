@@ -1,5 +1,6 @@
 package com.sofka.insurancequoter.back.folio.infrastructure.adapter.in.rest;
 
+import com.sofka.insurancequoter.back.calculation.application.usecase.exception.NoCalculableLocationsException;
 import com.sofka.insurancequoter.back.coverage.application.usecase.exception.InvalidCoverageCodeException;
 import com.sofka.insurancequoter.back.folio.application.usecase.CoreServiceException;
 import com.sofka.insurancequoter.back.folio.application.usecase.InvalidReferenceException;
@@ -102,6 +103,15 @@ public class GlobalExceptionHandler {
                                 "field", "coverageOptions[].code",
                                 "message", ex.getMessage()
                         ))
+                ));
+    }
+
+    @ExceptionHandler(NoCalculableLocationsException.class)
+    public ResponseEntity<Map<String, String>> handleNoCalculableLocations(NoCalculableLocationsException ex) {
+        return ResponseEntity.unprocessableEntity()
+                .body(Map.of(
+                        "error", "No calculable locations",
+                        "code", "NO_CALCULABLE_LOCATIONS"
                 ));
     }
 

@@ -4,5 +4,6 @@ package com.sofka.insurancequoter.back.location.domain.model;
 public enum BlockingAlertCode {
     MISSING_ZIP_CODE,
     MISSING_FIRE_KEY,
-    NO_TARIFABLE_GUARANTEES
+    NO_TARIFABLE_GUARANTEES,
+    MISSING_TARIFABLE_GUARANTEE
 }

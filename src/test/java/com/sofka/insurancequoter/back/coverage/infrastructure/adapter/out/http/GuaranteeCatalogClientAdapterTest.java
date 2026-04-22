@@ -40,8 +40,8 @@ class GuaranteeCatalogClientAdapterTest {
                 .willReturn(okJson("""
                         {
                           "guarantees": [
-                            {"code": "GUA-FIRE", "description": "Incendio edificios"},
-                            {"code": "GUA-THEFT", "description": "Robo"}
+                            {"code": "GUA-FIRE", "description": "Incendio edificios", "tarifable": true},
+                            {"code": "GUA-THEFT", "description": "Robo", "tarifable": true}
                           ]
                         }
                         """)));
