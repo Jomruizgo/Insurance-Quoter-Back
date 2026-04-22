@@ -1,12 +1,12 @@
 ---
-id: SPEC-003
+id: SPEC-004
 status: DRAFT
 feature: location-management
 created: 2026-04-21
 updated: 2026-04-21
 author: spec-generator
-version: "1.0"
-related-specs: ["SPEC-002"]
+version: "1.1"
+related-specs: ["SPEC-002", "SPEC-003-location-layout"]
 ---
 
 # Spec: Gestión de Ubicaciones de Cotización
@@ -277,86 +277,89 @@ CRITERIO-4.2: Folio inexistente en summary
 
 ### Modelos de Datos
 
+#### Estado actual del código (post feature/location-layout)
+
+> **IMPORTANTE:** La tabla `locations` y la entidad `LocationJpa` ya existen desde el feature `location-layout` (V4). Esta spec los **extiende**, no los recrea.
+
+| Artefacto | Estado | Acción requerida |
+|-----------|--------|-----------------|
+| `LocationJpa` | existe — solo `id, quote_id, index, active, location_name, created_at, updated_at` | agregar columnas de detalle |
+| `LocationRepository` (port out) | existe — métodos de layout (`findActiveByQuoteId`, `insertAll`, etc.) | agregar métodos de gestión |
+| `Location` (domain model) | existe — solo `record Location(int index, boolean active)` | extender con campos completos |
+| tabla `locations` | existe con 7 columnas básicas (V4) | migración V5 agrega columnas |
+| tabla `location_blocking_alerts` | no existe | migración V6 la crea |
+| `LocationJpaAdapter` | existe — implementa métodos de layout | agregar implementación de nuevos métodos |
+
 #### Entidades afectadas
 
 | Entidad | Almacén | Cambios | Descripción |
 |---------|---------|---------|-------------|
-| `LocationJpa` | tabla `locations` en `insurance_quoter_db` (:5432) | nueva | Ubicación individual de una cotización |
-| `BlockingAlertEmbeddable` | `@ElementCollection` en `locations` → tabla `location_blocking_alerts` | nueva | Alerta bloqueante (code + message) embebida en ubicación |
-| `QuoteJpa` | tabla `quotes` | modificada | Agrega relación `@OneToMany` a `LocationJpa` |
+| `LocationJpa` | tabla `locations` | **modificada** — agregar columnas de detalle | Ubicación con datos completos |
+| `BlockingAlertEmbeddable` | tabla `location_blocking_alerts` | **nueva** — `@ElementCollection` en `LocationJpa` | Alerta bloqueante (code + message) |
+| `Location` | domain model | **modificada** — extender el record existente | Modelo de dominio completo |
 
-#### Campos de la tabla `locations`
+#### Columnas a AGREGAR a `locations` (migración V5 — ALTER TABLE)
 
-| Columna | Tipo SQL | Obligatorio | Constraint | Descripción |
-|---------|----------|-------------|------------|-------------|
-| `id` | `BIGSERIAL` | sí | PK | Identificador interno |
-| `quote_id` | `BIGINT` | sí | FK → quotes.id, NOT NULL | Cotización a la que pertenece |
-| `location_index` | `INT` | sí | NOT NULL | Índice 1-based dentro de la cotización |
-| `location_name` | `VARCHAR(255)` | no | — | Nombre descriptivo de la ubicación |
-| `address` | `VARCHAR(500)` | no | — | Dirección completa |
-| `zip_code` | `VARCHAR(10)` | no | — | Código postal (validado contra core) |
-| `state` | `VARCHAR(100)` | no | — | Estado (enriquecido desde core) |
-| `municipality` | `VARCHAR(100)` | no | — | Municipio (enriquecido desde core) |
-| `neighborhood` | `VARCHAR(100)` | no | — | Colonia seleccionada |
-| `city` | `VARCHAR(100)` | no | — | Ciudad (enriquecido desde core) |
-| `construction_type` | `VARCHAR(50)` | no | — | Tipo constructivo (ej. MASONRY) |
-| `level` | `INT` | no | — | Nivel o piso |
-| `construction_year` | `INT` | no | — | Año de construcción |
-| `business_line_code` | `VARCHAR(50)` | no | — | Código del giro |
-| `business_line_fire_key` | `VARCHAR(50)` | no | — | Clave incendio del giro |
-| `business_line_description` | `VARCHAR(255)` | no | — | Descripción del giro |
-| `guarantees` | `JSONB` | no | — | Array JSON de garantías [{code, insuredValue}] |
-| `catastrophic_zone` | `VARCHAR(50)` | no | — | Zona catastrófica (enriquecido desde core) |
-| `validation_status` | `VARCHAR(20)` | sí | NOT NULL, DEFAULT 'INCOMPLETE' | COMPLETE o INCOMPLETE |
+> Columnas ya existentes: `id, quote_id, index, active, location_name, created_at, updated_at`
 
-#### Campos de la tabla `location_blocking_alerts`
+| Columna nueva | Tipo SQL | Obligatorio | Descripción |
+|---------------|----------|-------------|-------------|
+| `address` | `VARCHAR(500)` | no | Dirección completa |
+| `zip_code` | `VARCHAR(10)` | no | Código postal (validado contra core) |
+| `state` | `VARCHAR(100)` | no | Estado (enriquecido desde core) |
+| `municipality` | `VARCHAR(100)` | no | Municipio (enriquecido desde core) |
+| `neighborhood` | `VARCHAR(100)` | no | Colonia seleccionada |
+| `city` | `VARCHAR(100)` | no | Ciudad (enriquecido desde core) |
+| `construction_type` | `VARCHAR(50)` | no | Tipo constructivo (ej. MASONRY) |
+| `level` | `INT` | no | Nivel o piso |
+| `construction_year` | `INT` | no | Año de construcción |
+| `business_line_code` | `VARCHAR(50)` | no | Código del giro |
+| `business_line_fire_key` | `VARCHAR(50)` | no | Clave incendio del giro |
+| `business_line_description` | `VARCHAR(255)` | no | Descripción del giro |
+| `guarantees` | `JSONB` | no | Array JSON de garantías [{code, insuredValue}] |
+| `catastrophic_zone` | `VARCHAR(50)` | no | Zona catastrófica (enriquecido desde core) |
+| `validation_status` | `VARCHAR(20)` | sí | COMPLETE o INCOMPLETE — DEFAULT 'INCOMPLETE' |
+
+#### Campos de la tabla `location_blocking_alerts` (migración V6 — nueva)
 
 | Columna | Tipo SQL | Obligatorio | Constraint | Descripción |
 |---------|----------|-------------|------------|-------------|
-| `location_id` | `BIGINT` | sí | FK → locations.id | Ubicación propietaria |
+| `location_id` | `BIGINT` | sí | FK → locations.id ON DELETE CASCADE | Ubicación propietaria |
 | `alert_code` | `VARCHAR(50)` | sí | NOT NULL | Código de la alerta |
 | `alert_message` | `VARCHAR(255)` | sí | NOT NULL | Mensaje legible |
 
 #### Índices / Constraints
 
-- `INDEX (quote_id)` — soporta la carga de ubicaciones por cotización (acceso frecuente)
-- `UNIQUE (quote_id, location_index)` — garantiza unicidad del índice dentro de la cotización
-- `FK locations(quote_id) REFERENCES quotes(id) ON DELETE CASCADE`
+- `IDX_locations_quote_id` ya existe (V4)
+- `UK_locations_quote_index` ya existe (V4)
+- `idx_location_alerts_location_id` — nuevo en V6
 
 #### Migraciones Flyway
 
 ```sql
--- V3__create_locations_table.sql
-CREATE TABLE IF NOT EXISTS locations (
-    id                       BIGSERIAL PRIMARY KEY,
-    quote_id                 BIGINT          NOT NULL REFERENCES quotes(id) ON DELETE CASCADE,
-    location_index           INT             NOT NULL,
-    location_name            VARCHAR(255),
-    address                  VARCHAR(500),
-    zip_code                 VARCHAR(10),
-    state                    VARCHAR(100),
-    municipality             VARCHAR(100),
-    neighborhood             VARCHAR(100),
-    city                     VARCHAR(100),
-    construction_type        VARCHAR(50),
-    level                    INT,
-    construction_year        INT,
-    business_line_code       VARCHAR(50),
-    business_line_fire_key   VARCHAR(50),
-    business_line_description VARCHAR(255),
-    guarantees               JSONB,
-    catastrophic_zone        VARCHAR(50),
-    validation_status        VARCHAR(20)     NOT NULL DEFAULT 'INCOMPLETE',
-    CONSTRAINT uq_location_index UNIQUE (quote_id, location_index)
-);
+-- V5__add_location_detail_columns.sql
+ALTER TABLE locations
+    ADD COLUMN IF NOT EXISTS address                  VARCHAR(500),
+    ADD COLUMN IF NOT EXISTS zip_code                 VARCHAR(10),
+    ADD COLUMN IF NOT EXISTS state                    VARCHAR(100),
+    ADD COLUMN IF NOT EXISTS municipality             VARCHAR(100),
+    ADD COLUMN IF NOT EXISTS neighborhood             VARCHAR(100),
+    ADD COLUMN IF NOT EXISTS city                     VARCHAR(100),
+    ADD COLUMN IF NOT EXISTS construction_type        VARCHAR(50),
+    ADD COLUMN IF NOT EXISTS level                    INT,
+    ADD COLUMN IF NOT EXISTS construction_year        INT,
+    ADD COLUMN IF NOT EXISTS business_line_code       VARCHAR(50),
+    ADD COLUMN IF NOT EXISTS business_line_fire_key   VARCHAR(50),
+    ADD COLUMN IF NOT EXISTS business_line_description VARCHAR(255),
+    ADD COLUMN IF NOT EXISTS guarantees               JSONB,
+    ADD COLUMN IF NOT EXISTS catastrophic_zone        VARCHAR(50),
+    ADD COLUMN IF NOT EXISTS validation_status        VARCHAR(20) NOT NULL DEFAULT 'INCOMPLETE';
 
-CREATE INDEX IF NOT EXISTS idx_locations_quote_id ON locations (quote_id);
-
--- V4__create_location_blocking_alerts_table.sql
+-- V6__create_location_blocking_alerts_table.sql
 CREATE TABLE IF NOT EXISTS location_blocking_alerts (
-    location_id     BIGINT          NOT NULL REFERENCES locations(id) ON DELETE CASCADE,
-    alert_code      VARCHAR(50)     NOT NULL,
-    alert_message   VARCHAR(255)    NOT NULL
+    location_id     BIGINT       NOT NULL REFERENCES locations(id) ON DELETE CASCADE,
+    alert_code      VARCHAR(50)  NOT NULL,
+    alert_message   VARCHAR(255) NOT NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_location_alerts_location_id ON location_blocking_alerts (location_id);
@@ -364,10 +367,13 @@ CREATE INDEX IF NOT EXISTS idx_location_alerts_location_id ON location_blocking_
 
 #### Domain Models
 
+> `Location.java` ya existe como `record Location(int index, boolean active)`. Se reemplaza por versión extendida.
+
 ```java
-// location/domain/model/Location.java — POJO sin anotaciones JPA/Spring
+// location/domain/model/Location.java — REEMPLAZA el record existente
 public record Location(
     int index,
+    boolean active,
     String locationName,
     String address,
     String zipCode,
@@ -385,19 +391,19 @@ public record Location(
     List<BlockingAlert> blockingAlerts
 ) {}
 
-// location/domain/model/BusinessLine.java
+// location/domain/model/BusinessLine.java — nueva
 public record BusinessLine(String code, String fireKey, String description) {}
 
-// location/domain/model/Guarantee.java
+// location/domain/model/Guarantee.java — nueva
 public record Guarantee(String code, BigDecimal insuredValue) {}
 
-// location/domain/model/BlockingAlert.java
+// location/domain/model/BlockingAlert.java — nueva
 public record BlockingAlert(String code, String message) {}
 
-// location/domain/model/ValidationStatus.java
+// location/domain/model/ValidationStatus.java — nueva
 public enum ValidationStatus { COMPLETE, INCOMPLETE }
 
-// location/domain/model/BlockingAlertCode.java
+// location/domain/model/BlockingAlertCode.java — nueva
 public enum BlockingAlertCode {
     MISSING_ZIP_CODE,
     MISSING_FIRE_KEY,
@@ -732,20 +738,20 @@ LocationController.replaceLocations(folio, request)
 ### Backend
 
 #### Base de Datos
-- [ ] Crear migración `V3__create_locations_table.sql` — tabla `locations` con todos los campos, FK a `quotes`, UNIQUE `(quote_id, location_index)`
-- [ ] Crear migración `V4__create_location_blocking_alerts_table.sql` — tabla `location_blocking_alerts`, FK a `locations` con CASCADE
-- [ ] Crear índices: `idx_locations_quote_id`, `idx_location_alerts_location_id`
+- [ ] Crear migración `V5__add_location_detail_columns.sql` — `ALTER TABLE locations` agrega las 15 columnas de detalle listadas en el diseño
+- [ ] Crear migración `V6__create_location_blocking_alerts_table.sql` — tabla `location_blocking_alerts`, FK `locations.id` ON DELETE CASCADE, índice `idx_location_alerts_location_id`
 
 #### Dominio
-- [ ] Crear records `Location`, `BusinessLine`, `Guarantee`, `BlockingAlert` en `location/domain/model/`
-- [ ] Crear enums `ValidationStatus`, `BlockingAlertCode` en `location/domain/model/`
+- [ ] **Reemplazar** `Location.java` — extender el record existente (`int index, boolean active`) con todos los campos de detalle listados en el diseño
+- [ ] Crear records `BusinessLine`, `Guarantee`, `BlockingAlert` en `location/domain/model/` (nuevos)
+- [ ] Crear enums `ValidationStatus`, `BlockingAlertCode` en `location/domain/model/` (nuevos)
 - [ ] Crear `LocationValidationService` en `location/domain/service/` — método `calculateAlerts(Location, Optional<ZipCodeInfo>)`
 - [ ] Crear Input Port `GetLocationsUseCase` en `location/domain/port/in/`
 - [ ] Crear Input Port `ReplaceLocationsUseCase` en `location/domain/port/in/`
 - [ ] Crear Input Port `PatchLocationUseCase` en `location/domain/port/in/`
 - [ ] Crear Input Port `GetLocationsSummaryUseCase` en `location/domain/port/in/`
-- [ ] Crear Output Port `LocationRepository` en `location/domain/port/out/`
-- [ ] Crear Output Port `ZipCodeValidationClient` en `location/domain/port/out/`
+- [ ] **Extender** `LocationRepository` (port out existente) — agregar métodos: `findByFolioNumber`, `replaceAll`, `patchOne`, `findSummaryByFolioNumber`, `existsByFolioAndIndex`
+- [ ] Crear Output Port `ZipCodeValidationClient` en `location/domain/port/out/` (nuevo)
 
 #### Aplicación
 - [ ] Crear record `ReplaceLocationsCommand` en `location/application/usecase/command/`
@@ -757,11 +763,11 @@ LocationController.replaceLocations(folio, request)
 - [ ] Crear excepciones `FolioNotFoundException`, `LocationNotFoundException`, `VersionConflictException` (si no existen de SPEC-002)
 
 #### Infraestructura — Persistencia
-- [ ] Crear `BlockingAlertEmbeddable` en `location/infrastructure/adapter/out/persistence/entities/` — `@Embeddable`
-- [ ] Crear `LocationJpa` en `location/infrastructure/adapter/out/persistence/entities/` — `@Entity @Table(name = "locations")`, `@ManyToOne QuoteJpa`, `@ElementCollection` para alerts
-- [ ] Crear `LocationJpaRepository` en `location/infrastructure/adapter/out/persistence/repositories/` — extiende `JpaRepository<LocationJpa, Long>`; métodos: `findByQuoteJpa_FolioNumber`, `deleteByQuoteJpa_FolioNumber`
-- [ ] Crear `LocationPersistenceMapper` en `location/infrastructure/adapter/out/persistence/mappers/`
-- [ ] Crear `LocationJpaAdapter` en `location/infrastructure/adapter/out/persistence/adapter/` — implementa `LocationRepository`
+- [ ] Crear `BlockingAlertEmbeddable` en `location/infrastructure/adapter/out/persistence/entities/` — `@Embeddable` (nuevo)
+- [ ] **Extender** `LocationJpa` — agregar los 15 campos de detalle + `@ElementCollection` para `blockingAlerts` usando `BlockingAlertEmbeddable`
+- [ ] **Extender** `LocationJpaRepository` — agregar métodos necesarios para los nuevos casos de uso (ej. `findByQuoteId` con join fetch de alertas)
+- [ ] **Extender** `LocationPersistenceMapper` — mapear los nuevos campos de `Location ↔ LocationJpa`
+- [ ] **Extender** `LocationJpaAdapter` — implementar los nuevos métodos del port: `findByFolioNumber`, `replaceAll`, `patchOne`, `findSummaryByFolioNumber`, `existsByFolioAndIndex`
 
 #### Infraestructura — HTTP Client
 - [ ] Crear `ZipCodeResponse` DTO en `location/infrastructure/adapter/out/http/dto/`
