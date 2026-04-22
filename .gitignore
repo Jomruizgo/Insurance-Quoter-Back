@@ -40,3 +40,7 @@ out/
 .env
 *.env
 !.env.example
+
+### Claude agent internal state ###
+.claude/agent-memory/
+.claude/scheduled_tasks.lock
