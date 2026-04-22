@@ -2,7 +2,9 @@
 
 **Fecha:** 2026-04-22  
 **Alcance:** `src/main/java/com/sofka/insurancequoter/`  
-**Resumen:** Arquitectura hexagonal bien implementada, sin violaciones. Un bug crítico de wiring en `location` y dos archivos huérfanos a eliminar.
+**Resumen:** Arquitectura hexagonal bien implementada, sin violaciones. Solo se encontraron dos archivos huérfanos (dead code) a eliminar.
+
+> **Corrección (verificado manualmente):** El agente de exploración indicó que `SaveLocationLayoutUseCase` y `GetLocationLayoutUseCase` no estaban registradas como `@Bean`. Esto es **incorrecto** — ambos use cases están correctamente wired en `LocationLayoutConfig.java` (archivo separado de `LocationConfig.java` que el agente no inspeccionó).
 
 ---
 
@@ -15,19 +17,18 @@
 | Constructor injection (sin @Autowired) | ✅ 100% |
 | JPA solo en capa de persistencia | ✅ Domain models son `record` limpios |
 | Lógica de negocio en use cases / domain service | ✅ Controllers solo parsean HTTP |
+| Wiring completo en Spring | ✅ Todos los use cases tienen `@Bean` (`LocationLayoutConfig.java`) |
 | Tests | ✅ 39 clases (unit + integración con Testcontainers + WireMock) |
-| **Wiring completo en Spring** | ❌ 2 use cases en `location` no son `@Bean` |
 
-**Implementado y funcional: ~85%**
+**Implementado y funcional: ~95%**
 
 ---
 
-## Bug crítico — Acción inmediata requerida
+## ~~Bug crítico~~ — FALSO POSITIVO (ya corregido en doc)
 
-### `SaveLocationLayoutUseCase` y `GetLocationLayoutUseCase` no están wired en Spring
+### ~~`SaveLocationLayoutUseCase` y `GetLocationLayoutUseCase` no están wired en Spring~~
 
-**Archivos afectados:**
-- `back/location/infrastructure/config/LocationConfig.java` — faltan 2 `@Bean`
+El wiring existe en `back/location/infrastructure/config/LocationLayoutConfig.java`
 - `back/location/application/usecase/SaveLocationLayoutUseCaseImpl.java` — implementación existe (102 líneas) pero nunca se registra
 - `back/location/application/usecase/GetLocationLayoutUseCaseImpl.java` — ídem
 
@@ -157,7 +158,6 @@ La clase principal real está en `insurancequoter/InsuranceQuoterApplication.jav
 
 | Prioridad | Acción |
 |-----------|--------|
-| 🔴 Crítico | Agregar 2 `@Bean` en `LocationConfig.java` para `SaveLocationLayoutUseCase` y `GetLocationLayoutUseCase` |
 | 🟡 Pendiente | Eliminar `Insurance_Quoter/InsuranceQuoterApplication.java` y su test vacío |
 | 🟡 Pendiente | Configurar Jacoco para medir cobertura (DoD exige ≥ 80%) |
 | 🟢 Opcional | Integration test para el flujo layout en `location` |
