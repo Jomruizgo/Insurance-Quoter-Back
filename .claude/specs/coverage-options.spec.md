@@ -1,6 +1,6 @@
 ---
 id: SPEC-006
-status: DRAFT
+status: IMPLEMENTED
 feature: coverage-options
 created: 2026-04-22
 updated: 2026-04-22
