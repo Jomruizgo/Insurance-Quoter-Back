@@ -35,3 +35,12 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Environment secrets ###
+.env
+*.env
+!.env.example
+
+### Claude agent internal state ###
+.claude/agent-memory/
+.claude/scheduled_tasks.lock

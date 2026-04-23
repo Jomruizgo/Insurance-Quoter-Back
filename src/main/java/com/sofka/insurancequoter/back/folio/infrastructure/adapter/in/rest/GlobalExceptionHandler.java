@@ -1,10 +1,17 @@
 package com.sofka.insurancequoter.back.folio.infrastructure.adapter.in.rest;
 
+import com.sofka.insurancequoter.back.calculation.application.usecase.exception.NoCalculableLocationsException;
+import com.sofka.insurancequoter.back.coverage.application.usecase.exception.InvalidCoverageCodeException;
 import com.sofka.insurancequoter.back.folio.application.usecase.CoreServiceException;
 import com.sofka.insurancequoter.back.folio.application.usecase.InvalidReferenceException;
+import com.sofka.insurancequoter.back.location.application.usecase.FolioNotFoundException;
+import com.sofka.insurancequoter.back.location.application.usecase.LocationNotFoundException;
+import com.sofka.insurancequoter.back.location.application.usecase.VersionConflictException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -17,6 +24,42 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
+    @ExceptionHandler(FolioNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleFolioNotFound(FolioNotFoundException ex) {
+        return ResponseEntity.status(404)
+                .body(Map.of(
+                        "error", "Folio not found",
+                        "code", "FOLIO_NOT_FOUND"
+                ));
+    }
+
+    @ExceptionHandler(VersionConflictException.class)
+    public ResponseEntity<Map<String, String>> handleVersionConflict(VersionConflictException ex) {
+        return ResponseEntity.status(409)
+                .body(Map.of(
+                        "error", "Optimistic lock conflict",
+                        "code", "VERSION_CONFLICT"
+                ));
+    }
+
+    @ExceptionHandler(LocationNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleLocationNotFound(LocationNotFoundException ex) {
+        return ResponseEntity.status(404)
+                .body(Map.of(
+                        "error", "Location index not found",
+                        "code", "LOCATION_NOT_FOUND"
+                ));
+    }
+
+    @ExceptionHandler({ObjectOptimisticLockingFailureException.class, OptimisticLockingFailureException.class})
+    public ResponseEntity<Map<String, String>> handleOptimisticLock(Exception ex) {
+        return ResponseEntity.status(409)
+                .body(Map.of(
+                        "error", "Optimistic lock conflict",
+                        "code", "VERSION_CONFLICT"
+                ));
+    }
 
     @ExceptionHandler(InvalidReferenceException.class)
     public ResponseEntity<Map<String, String>> handleInvalidReference(InvalidReferenceException ex) {
@@ -37,6 +80,38 @@ public class GlobalExceptionHandler {
                         "error", "Validation failed",
                         "code", "VALIDATION_ERROR",
                         "fields", fields
+                ));
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, Object>> handleIllegalArgument(IllegalArgumentException ex) {
+        return ResponseEntity.status(422)
+                .body(Map.of(
+                        "error", "Validation failed",
+                        "code", "VALIDATION_ERROR",
+                        "fields", List.of(ex.getMessage())
+                ));
+    }
+
+    @ExceptionHandler(InvalidCoverageCodeException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidCoverageCode(InvalidCoverageCodeException ex) {
+        return ResponseEntity.status(422)
+                .body(Map.of(
+                        "error", "Validation failed",
+                        "code", "VALIDATION_ERROR",
+                        "fields", List.of(Map.of(
+                                "field", "coverageOptions[].code",
+                                "message", ex.getMessage()
+                        ))
+                ));
+    }
+
+    @ExceptionHandler(NoCalculableLocationsException.class)
+    public ResponseEntity<Map<String, String>> handleNoCalculableLocations(NoCalculableLocationsException ex) {
+        return ResponseEntity.unprocessableEntity()
+                .body(Map.of(
+                        "error", "No calculable locations",
+                        "code", "NO_CALCULABLE_LOCATIONS"
                 ));
     }
 
