@@ -29,8 +29,10 @@ public class GeneralInfoRestMapper {
                 new UnderwritingDataDto(
                         domain.underwritingInfo().subscriberId(),
                         domain.underwritingInfo().agentCode(),
-                        domain.underwritingInfo().riskClassification().name(),
-                        domain.underwritingInfo().businessType().name()
+                        domain.underwritingInfo().riskClassification() != null
+                                ? domain.underwritingInfo().riskClassification().name() : null,
+                        domain.underwritingInfo().businessType() != null
+                                ? domain.underwritingInfo().businessType().name() : null
                 ),
                 domain.updatedAt(),
                 domain.version()
