@@ -87,7 +87,7 @@ public class CalculationResultJpaAdapter implements CalculationResultRepository,
         // 2. Update quote status — this triggers @Version increment via Hibernate
         quoteJpa.setQuoteStatus("CALCULATED");
         quoteJpa.setUpdatedAt(Instant.now());
-        QuoteJpa savedQuote = quoteJpaRepository.save(quoteJpa);
+        QuoteJpa savedQuote = quoteJpaRepository.saveAndFlush(quoteJpa);
 
         // 3. Delete previous calculation result (idempotent recalculation)
         calculationResultJpaRepository.deleteByQuoteId(quoteJpa.getId());

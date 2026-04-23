@@ -40,7 +40,7 @@ public class GeneralInfoJpaAdapter implements GeneralInfoRepository {
         existing.setRiskClassification(generalInfo.underwritingInfo().riskClassification().name());
         existing.setBusinessType(generalInfo.underwritingInfo().businessType().name());
 
-        QuoteJpa saved = quoteJpaRepository.save(existing);
+        QuoteJpa saved = quoteJpaRepository.saveAndFlush(existing);
         return toDomain(saved);
     }
 
