@@ -22,7 +22,7 @@ public class GetQuoteStateUseCaseImpl implements GetQuoteStateUseCase {
         LocationStateSummary locationSummary = locationStateReader.readByFolioNumber(folioNumber);
 
         QuoteSections sections = new QuoteSections(
-                SectionStatus.PENDING,                      // generalInfo — requires SPEC-006
+                evaluateGeneralInfo(snapshot),
                 evaluateLayout(snapshot),
                 evaluateLocations(locationSummary),
                 SectionStatus.PENDING,                      // coverageOptions — requires SPEC-007
@@ -39,6 +39,10 @@ public class GetQuoteStateUseCaseImpl implements GetQuoteStateUseCase {
                 snapshot.version(),
                 snapshot.updatedAt()
         );
+    }
+
+    private SectionStatus evaluateGeneralInfo(QuoteSnapshot snapshot) {
+        return snapshot.hasGeneralInfo() ? SectionStatus.COMPLETE : SectionStatus.PENDING;
     }
 
     private SectionStatus evaluateLayout(QuoteSnapshot snapshot) {

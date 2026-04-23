@@ -9,5 +9,6 @@ public record QuoteSnapshot(
         Integer numberOfLocations,
         String locationType,
         Long version,
-        Instant updatedAt
+        Instant updatedAt,
+        boolean hasGeneralInfo
 ) {}

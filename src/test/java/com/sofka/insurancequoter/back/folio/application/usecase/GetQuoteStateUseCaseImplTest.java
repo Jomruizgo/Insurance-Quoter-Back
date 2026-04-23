@@ -30,8 +30,14 @@ class GetQuoteStateUseCaseImplTest {
 
     private static final Instant NOW = Instant.parse("2026-04-21T10:00:00Z");
 
+    // hasGeneralInfo = false (insured_name null)
     private QuoteSnapshot snapshot(String status, Integer numLocations, String locationType) {
-        return new QuoteSnapshot("FOL-001", status, numLocations, locationType, 3L, NOW);
+        return new QuoteSnapshot("FOL-001", status, numLocations, locationType, 3L, NOW, false);
+    }
+
+    // hasGeneralInfo = true (insured_name present)
+    private QuoteSnapshot snapshotWithGeneralInfo(String status, Integer numLocations, String locationType) {
+        return new QuoteSnapshot("FOL-001", status, numLocations, locationType, 3L, NOW, true);
     }
 
     @Test
@@ -102,7 +108,7 @@ class GetQuoteStateUseCaseImplTest {
 
     @Test
     void getState_whenGeneralInfoFieldsNull_returnsGeneralInfoPending() {
-        // GIVEN — general-info not yet implemented
+        // GIVEN — insured_name is null → hasGeneralInfo = false
         when(quoteStateQuery.findByFolioNumber("FOL-001"))
                 .thenReturn(snapshot("IN_PROGRESS", 3, "MULTIPLE"));
         when(locationStateReader.readByFolioNumber("FOL-001"))
@@ -111,8 +117,23 @@ class GetQuoteStateUseCaseImplTest {
         // WHEN
         QuoteState state = useCase.getState("FOL-001");
 
-        // THEN — generalInfo and coverageOptions always PENDING until their specs are implemented
+        // THEN
         assertThat(state.sections().generalInfo()).isEqualTo(SectionStatus.PENDING);
         assertThat(state.sections().coverageOptions()).isEqualTo(SectionStatus.PENDING);
+    }
+
+    @Test
+    void getState_whenGeneralInfoSaved_returnsGeneralInfoComplete() {
+        // GIVEN — insured_name is present → hasGeneralInfo = true
+        when(quoteStateQuery.findByFolioNumber("FOL-001"))
+                .thenReturn(snapshotWithGeneralInfo("IN_PROGRESS", 3, "MULTIPLE"));
+        when(locationStateReader.readByFolioNumber("FOL-001"))
+                .thenReturn(new LocationStateSummary(0, 0, 0));
+
+        // WHEN
+        QuoteState state = useCase.getState("FOL-001");
+
+        // THEN
+        assertThat(state.sections().generalInfo()).isEqualTo(SectionStatus.COMPLETE);
     }
 }

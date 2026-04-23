@@ -24,7 +24,8 @@ public class QuoteStateJpaAdapter implements QuoteStateQuery {
                 jpa.getNumberOfLocations(),
                 jpa.getLocationType(),
                 jpa.getVersion(),
-                jpa.getUpdatedAt()
+                jpa.getUpdatedAt(),
+                jpa.getInsuredName() != null
         );
     }
 }
