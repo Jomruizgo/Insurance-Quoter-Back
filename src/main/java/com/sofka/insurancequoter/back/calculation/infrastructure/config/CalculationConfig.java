@@ -1,8 +1,14 @@
 package com.sofka.insurancequoter.back.calculation.infrastructure.config;
 
+import com.sofka.insurancequoter.back.calculation.application.usecase.AcceptQuoteUseCaseImpl;
 import com.sofka.insurancequoter.back.calculation.application.usecase.CalculatePremiumUseCaseImpl;
+import com.sofka.insurancequoter.back.calculation.application.usecase.GetCalculationResultUseCaseImpl;
+import com.sofka.insurancequoter.back.calculation.domain.port.in.AcceptQuoteUseCase;
 import com.sofka.insurancequoter.back.calculation.domain.port.in.CalculatePremiumUseCase;
+import com.sofka.insurancequoter.back.calculation.domain.port.in.GetCalculationResultUseCase;
+import com.sofka.insurancequoter.back.calculation.domain.port.out.AcceptQuoteRepository;
 import com.sofka.insurancequoter.back.calculation.domain.port.out.CalculationResultRepository;
+import com.sofka.insurancequoter.back.calculation.domain.port.out.GetCalculationResultRepository;
 import com.sofka.insurancequoter.back.calculation.domain.port.out.QuoteCalculationReader;
 import com.sofka.insurancequoter.back.calculation.domain.port.out.TariffClient;
 import com.sofka.insurancequoter.back.calculation.domain.service.CalculationService;
@@ -85,6 +91,22 @@ public class CalculationConfig {
                 tariffClient,
                 guaranteeCatalogClient,
                 calculationService
+        );
+    }
+
+    @Bean
+    public GetCalculationResultUseCase getCalculationResultUseCase(
+            CalculationResultJpaAdapter calculationResultJpaAdapter) {
+        return new GetCalculationResultUseCaseImpl(
+                (GetCalculationResultRepository) calculationResultJpaAdapter
+        );
+    }
+
+    @Bean
+    public AcceptQuoteUseCase acceptQuoteUseCase(
+            CalculationResultJpaAdapter calculationResultJpaAdapter) {
+        return new AcceptQuoteUseCaseImpl(
+                (AcceptQuoteRepository) calculationResultJpaAdapter
         );
     }
 }

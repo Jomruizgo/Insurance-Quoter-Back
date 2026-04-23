@@ -1,6 +1,8 @@
 package com.sofka.insurancequoter.back.calculation.infrastructure.adapter.in.rest.swaggerdocs;
 
+import com.sofka.insurancequoter.back.calculation.infrastructure.adapter.in.rest.dto.request.AcceptQuoteRequest;
 import com.sofka.insurancequoter.back.calculation.infrastructure.adapter.in.rest.dto.request.CalculatePremiumRequest;
+import com.sofka.insurancequoter.back.calculation.infrastructure.adapter.in.rest.dto.response.AcceptQuoteResponse;
 import com.sofka.insurancequoter.back.calculation.infrastructure.adapter.in.rest.dto.response.CalculationResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -8,6 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -31,5 +34,27 @@ public interface CalculationApi {
     ResponseEntity<CalculationResponse> calculate(
             @PathVariable String folio,
             @Valid @RequestBody CalculatePremiumRequest request
+    );
+
+    @Operation(summary = "Obtener resultado de cálculo",
+               description = "Lee el resultado de cálculo almacenado para un folio")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Resultado encontrado"),
+            @ApiResponse(responseCode = "404", description = "Folio no encontrado o sin resultado calculado")
+    })
+    @GetMapping("/{folio}/calculation-result")
+    ResponseEntity<CalculationResponse> getCalculationResult(@PathVariable String folio);
+
+    @Operation(summary = "Aceptar cotización",
+               description = "Acepta la cotización y cambia el estado a ISSUED")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Cotización aceptada"),
+            @ApiResponse(responseCode = "404", description = "Folio no encontrado"),
+            @ApiResponse(responseCode = "409", description = "Conflicto de versión (optimistic lock)")
+    })
+    @PostMapping("/{folio}/accept")
+    ResponseEntity<AcceptQuoteResponse> accept(
+            @PathVariable String folio,
+            @Valid @RequestBody AcceptQuoteRequest request
     );
 }

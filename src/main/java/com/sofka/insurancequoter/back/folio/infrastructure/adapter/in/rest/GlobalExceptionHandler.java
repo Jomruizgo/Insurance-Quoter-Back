@@ -1,5 +1,6 @@
 package com.sofka.insurancequoter.back.folio.infrastructure.adapter.in.rest;
 
+import com.sofka.insurancequoter.back.calculation.application.usecase.exception.CalculationResultNotFoundException;
 import com.sofka.insurancequoter.back.calculation.application.usecase.exception.NoCalculableLocationsException;
 import com.sofka.insurancequoter.back.coverage.application.usecase.exception.InvalidCoverageCodeException;
 import com.sofka.insurancequoter.back.folio.application.usecase.CoreServiceException;
@@ -15,6 +16,7 @@ import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.List;
 import java.util.Map;
@@ -25,12 +27,30 @@ public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<Map<String, String>> handleNoResourceFound(NoResourceFoundException ex) {
+        return ResponseEntity.status(404)
+                .body(Map.of(
+                        "error", "Resource not found",
+                        "code", "NOT_FOUND"
+                ));
+    }
+
     @ExceptionHandler(FolioNotFoundException.class)
     public ResponseEntity<Map<String, String>> handleFolioNotFound(FolioNotFoundException ex) {
         return ResponseEntity.status(404)
                 .body(Map.of(
                         "error", "Folio not found",
                         "code", "FOLIO_NOT_FOUND"
+                ));
+    }
+
+    @ExceptionHandler(CalculationResultNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleCalculationResultNotFound(CalculationResultNotFoundException ex) {
+        return ResponseEntity.status(404)
+                .body(Map.of(
+                        "error", "Calculation result not found",
+                        "code", "CALCULATION_RESULT_NOT_FOUND"
                 ));
     }
 
