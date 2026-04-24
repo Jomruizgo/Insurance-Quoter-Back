@@ -18,7 +18,6 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -51,7 +50,7 @@ class QuoteJpaAdapterTest {
         // THEN
         assertThat(result).isEmpty();
         verify(jpaRepository).findBySubscriberIdAndAgentCodeAndQuoteStatus(
-                eq("SUB-001"), eq("AGT-123"), eq("CREATED"));
+                "SUB-001", "AGT-123", "CREATED");
     }
 
     // --- save ---

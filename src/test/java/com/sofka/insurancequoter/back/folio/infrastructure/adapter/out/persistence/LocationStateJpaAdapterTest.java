@@ -62,9 +62,9 @@ class LocationStateJpaAdapterTest {
         LocationStateSummary result = adapter.readByFolioNumber("FOL-001");
 
         // THEN
-        assertThat(result.total()).isEqualTo(0);
-        assertThat(result.completeCount()).isEqualTo(0);
-        assertThat(result.incompleteCount()).isEqualTo(0);
+        assertThat(result.total()).isZero();
+        assertThat(result.completeCount()).isZero();
+        assertThat(result.incompleteCount()).isZero();
     }
 
     @Test
@@ -95,6 +95,6 @@ class LocationStateJpaAdapterTest {
         LocationStateSummary result = adapter.readByFolioNumber("UNKNOWN");
 
         // THEN
-        assertThat(result.total()).isEqualTo(0);
+        assertThat(result.total()).isZero();
     }
 }

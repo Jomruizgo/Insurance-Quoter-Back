@@ -49,7 +49,7 @@ public class CoverageOptionJpaAdapter implements CoverageOptionRepository, Quote
         List<CoverageOptionJpa> savedList = coverageOptionJpaRepository.saveAll(jpaList);
         // Touch the quote to trigger @UpdateTimestamp and force version increment via @Version
         quote.setUpdatedAt(Instant.now());
-        quoteJpaRepository.save(quote);
+        quoteJpaRepository.saveAndFlush(quote);
         return mapper.toDomainList(savedList);
     }
 

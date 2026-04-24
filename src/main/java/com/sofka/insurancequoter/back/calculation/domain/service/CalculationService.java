@@ -25,8 +25,7 @@ public class CalculationService {
     public boolean isCalculable(Location location, Set<String> tarifableCodes) {
         if (isBlank(location.zipCode())) return false;
         if (location.businessLine() == null || isBlank(location.businessLine().fireKey())) return false;
-        if (!hasTarifableGuarantee(location, tarifableCodes)) return false;
-        return true;
+        return hasTarifableGuarantee(location, tarifableCodes);
     }
 
     // Returns the list of blocking alerts explaining why a location is not calculable

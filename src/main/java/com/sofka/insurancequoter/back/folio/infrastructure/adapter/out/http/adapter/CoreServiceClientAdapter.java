@@ -64,4 +64,24 @@ public class CoreServiceClientAdapter implements CoreServiceClient {
         }
         return response.folioNumber();
     }
+
+    @Override
+    public String getAgentName(String agentCode) {
+        AgentsResponse response = restClient.get()
+                .uri("/v1/agents")
+                .retrieve()
+                .onStatus(HttpStatusCode::isError, (req, res) -> {
+                    throw new CoreServiceException(
+                            "Core service error fetching agents: HTTP " + res.getStatusCode().value());
+                })
+                .body(AgentsResponse.class);
+        if (response == null || response.agents() == null) {
+            return null;
+        }
+        return response.agents().stream()
+                .filter(a -> agentCode.equals(a.code()))
+                .map(AgentsResponse.AgentItem::name)
+                .findFirst()
+                .orElse(null);
+    }
 }

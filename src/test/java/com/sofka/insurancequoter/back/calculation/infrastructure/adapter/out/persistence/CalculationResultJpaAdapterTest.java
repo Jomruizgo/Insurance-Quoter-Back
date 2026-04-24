@@ -160,7 +160,7 @@ class CalculationResultJpaAdapterTest {
         // GIVEN
         QuoteJpa quoteJpa = buildQuoteJpa();
         when(quoteJpaRepository.findByFolioNumber(FOLIO)).thenReturn(Optional.of(quoteJpa));
-        when(quoteJpaRepository.save(quoteJpa)).thenReturn(quoteJpa);
+        when(quoteJpaRepository.saveAndFlush(quoteJpa)).thenReturn(quoteJpa);
         doNothing().when(calculationResultJpaRepository).deleteByQuoteId(QUOTE_ID);
 
         CalculationResultJpa savedJpa = CalculationResultJpa.builder()
@@ -170,7 +170,7 @@ class CalculationResultJpaAdapterTest {
                 .calculatedAt(Instant.now()).build();
         CalculationResult result = buildCalculationResult(true);
 
-        when(calculationPersistenceMapper.toJpa(eq(result), eq(quoteJpa))).thenReturn(savedJpa);
+        when(calculationPersistenceMapper.toJpa(result, quoteJpa)).thenReturn(savedJpa);
         when(calculationResultJpaRepository.save(savedJpa)).thenReturn(savedJpa);
         when(calculationPersistenceMapper.toPremiumByLocationJpa(any(), eq(savedJpa)))
                 .thenReturn(PremiumByLocationJpa.builder().calculable(true).locationIndex(1).build());
@@ -180,7 +180,7 @@ class CalculationResultJpaAdapterTest {
         adapter.persist(FOLIO, result);
 
         // THEN
-        verify(quoteJpaRepository).save(argThat(q -> "CALCULATED".equals(q.getQuoteStatus())));
+        verify(quoteJpaRepository).saveAndFlush(argThat(q -> "CALCULATED".equals(q.getQuoteStatus())));
         verify(calculationResultJpaRepository).save(savedJpa);
     }
 
@@ -189,7 +189,7 @@ class CalculationResultJpaAdapterTest {
         // GIVEN
         QuoteJpa quoteJpa = buildQuoteJpa();
         when(quoteJpaRepository.findByFolioNumber(FOLIO)).thenReturn(Optional.of(quoteJpa));
-        when(quoteJpaRepository.save(quoteJpa)).thenReturn(quoteJpa);
+        when(quoteJpaRepository.saveAndFlush(quoteJpa)).thenReturn(quoteJpa);
         doNothing().when(calculationResultJpaRepository).deleteByQuoteId(QUOTE_ID);
 
         CalculationResultJpa savedJpa = CalculationResultJpa.builder().id(2L).quote(quoteJpa)
@@ -216,7 +216,7 @@ class CalculationResultJpaAdapterTest {
         // GIVEN — result with 2 locations
         QuoteJpa quoteJpa = buildQuoteJpa();
         when(quoteJpaRepository.findByFolioNumber(FOLIO)).thenReturn(Optional.of(quoteJpa));
-        when(quoteJpaRepository.save(quoteJpa)).thenReturn(quoteJpa);
+        when(quoteJpaRepository.saveAndFlush(quoteJpa)).thenReturn(quoteJpa);
         doNothing().when(calculationResultJpaRepository).deleteByQuoteId(QUOTE_ID);
 
         CoverageBreakdown bd = new CoverageBreakdown(
@@ -252,7 +252,7 @@ class CalculationResultJpaAdapterTest {
         // GIVEN — result with one non-calculable location
         QuoteJpa quoteJpa = buildQuoteJpa();
         when(quoteJpaRepository.findByFolioNumber(FOLIO)).thenReturn(Optional.of(quoteJpa));
-        when(quoteJpaRepository.save(quoteJpa)).thenReturn(quoteJpa);
+        when(quoteJpaRepository.saveAndFlush(quoteJpa)).thenReturn(quoteJpa);
         doNothing().when(calculationResultJpaRepository).deleteByQuoteId(QUOTE_ID);
 
         CalculationResult result = buildCalculationResult(false);
