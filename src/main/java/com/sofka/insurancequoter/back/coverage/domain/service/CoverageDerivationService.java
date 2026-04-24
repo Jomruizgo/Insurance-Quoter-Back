@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 // Pure domain service — no Spring annotations, no infrastructure dependencies.
@@ -63,6 +64,17 @@ public class CoverageDerivationService {
      * @param hasCatZone           true if any location has a non-null, non-blank catastrophicZone
      * @return derived coverage options; COV-BI is always included
      */
+    public Map<String, String> knownDescriptions() {
+        return Map.of(
+                COV_FIRE,  DESC_FIRE,
+                COV_THEFT, DESC_THEFT,
+                COV_GLASS, DESC_GLASS,
+                COV_ELEC,  DESC_ELEC,
+                COV_CAT,   DESC_CAT,
+                COV_BI,    DESC_BI
+        );
+    }
+
     public List<CoverageOption> deriveFrom(List<String> activeGuaranteeCodes, boolean hasCatZone) {
         Set<String> codes = new LinkedHashSet<>(activeGuaranteeCodes);
         List<CoverageOption> result = new ArrayList<>();

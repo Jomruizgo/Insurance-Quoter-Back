@@ -67,8 +67,8 @@ public class CoverageConfig {
     @Bean
     public SaveCoverageOptionsUseCase saveCoverageOptionsUseCase(
             CoverageOptionJpaAdapter adapter,
-            GuaranteeCatalogClient guaranteeCatalogClient) {
-        return new SaveCoverageOptionsUseCaseImpl(adapter, adapter, guaranteeCatalogClient);
+            CoverageDerivationService coverageDerivationService) {
+        return new SaveCoverageOptionsUseCaseImpl(adapter, adapter, coverageDerivationService);
     }
 
     @Bean
