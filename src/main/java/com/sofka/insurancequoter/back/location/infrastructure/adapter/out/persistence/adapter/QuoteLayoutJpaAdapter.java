@@ -46,7 +46,7 @@ public class QuoteLayoutJpaAdapter implements QuoteLayoutRepository {
         jpa.setNumberOfLocations(data.numberOfLocations());
         jpa.setLocationType(data.locationType());
 
-        QuoteJpa saved = quoteJpaRepository.save(jpa);
+        QuoteJpa saved = quoteJpaRepository.saveAndFlush(jpa);
         return mapper.toQuoteLayoutData(saved);
     }
 }

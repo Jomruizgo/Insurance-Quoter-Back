@@ -90,7 +90,8 @@ class TariffClientAdapterTest {
                 .willReturn(serverError()));
 
         // WHEN / THEN
-        assertThatThrownBy(() -> buildAdapter().fetchTariffs())
+        var adapter = buildAdapter();
+        assertThatThrownBy(adapter::fetchTariffs)
                 .isInstanceOf(CoreServiceException.class);
     }
 
@@ -103,7 +104,8 @@ class TariffClientAdapterTest {
                 .willReturn(aResponse().withFault(Fault.CONNECTION_RESET_BY_PEER)));
 
         // WHEN / THEN
-        assertThatThrownBy(() -> buildAdapter().fetchTariffs())
+        var adapter = buildAdapter();
+        assertThatThrownBy(adapter::fetchTariffs)
                 .isInstanceOf(CoreServiceException.class);
     }
 }

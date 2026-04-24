@@ -5,6 +5,8 @@ import com.sofka.insurancequoter.back.folio.application.usecase.InvalidReference
 import com.sofka.insurancequoter.back.folio.domain.model.Quote;
 import com.sofka.insurancequoter.back.folio.domain.model.QuoteStatus;
 import com.sofka.insurancequoter.back.folio.domain.port.in.CreateFolioUseCase;
+import com.sofka.insurancequoter.back.folio.domain.port.in.ListFoliosUseCase;
+import com.sofka.insurancequoter.back.folio.infrastructure.adapter.in.rest.mapper.FolioListRestMapper;
 import com.sofka.insurancequoter.back.folio.infrastructure.adapter.in.rest.mapper.FolioRestMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,6 +32,9 @@ class FolioControllerTest {
     @Mock
     private CreateFolioUseCase createFolioUseCase;
 
+    @Mock
+    private ListFoliosUseCase listFoliosUseCase;
+
     private MockMvc mockMvc;
 
     private static final Instant FIXED = Instant.parse("2026-04-20T14:30:00Z");
@@ -40,7 +45,9 @@ class FolioControllerTest {
         validator.afterPropertiesSet();
 
         mockMvc = MockMvcBuilders
-                .standaloneSetup(new FolioController(createFolioUseCase, new FolioRestMapper()))
+                .standaloneSetup(new FolioController(
+                        createFolioUseCase, listFoliosUseCase,
+                        new FolioRestMapper(), new FolioListRestMapper()))
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .setValidator(validator)
                 .build();

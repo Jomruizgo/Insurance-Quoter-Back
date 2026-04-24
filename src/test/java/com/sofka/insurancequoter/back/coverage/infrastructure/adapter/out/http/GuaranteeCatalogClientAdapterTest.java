@@ -66,7 +66,8 @@ class GuaranteeCatalogClientAdapterTest {
                 .willReturn(serverError()));
 
         // WHEN / THEN
-        assertThatThrownBy(() -> buildAdapter().fetchGuarantees())
+        var adapter = buildAdapter();
+        assertThatThrownBy(adapter::fetchGuarantees)
                 .isInstanceOf(CoreServiceException.class)
                 .hasMessageContaining("Core service error");
     }
@@ -80,7 +81,8 @@ class GuaranteeCatalogClientAdapterTest {
                 .willReturn(aResponse().withFault(Fault.CONNECTION_RESET_BY_PEER)));
 
         // WHEN / THEN
-        assertThatThrownBy(() -> buildAdapter().fetchGuarantees())
+        var adapter = buildAdapter();
+        assertThatThrownBy(adapter::fetchGuarantees)
                 .isInstanceOf(CoreServiceException.class)
                 .hasMessageContaining("Core service unavailable");
     }

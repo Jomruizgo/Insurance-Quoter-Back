@@ -1,11 +1,12 @@
 package com.sofka.insurancequoter.back.calculation.infrastructure.adapter.in.rest;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sofka.insurancequoter.back.calculation.application.usecase.exception.NoCalculableLocationsException;
 import com.sofka.insurancequoter.back.calculation.domain.model.CalculationResult;
 import com.sofka.insurancequoter.back.calculation.domain.model.CoverageBreakdown;
 import com.sofka.insurancequoter.back.calculation.domain.model.PremiumByLocation;
+import com.sofka.insurancequoter.back.calculation.domain.port.in.AcceptQuoteUseCase;
 import com.sofka.insurancequoter.back.calculation.domain.port.in.CalculatePremiumUseCase;
+import com.sofka.insurancequoter.back.calculation.domain.port.in.GetCalculationResultUseCase;
 import com.sofka.insurancequoter.back.calculation.infrastructure.adapter.in.rest.dto.response.CalculationResponse;
 import com.sofka.insurancequoter.back.calculation.infrastructure.adapter.in.rest.dto.response.CoverageBreakdownResponse;
 import com.sofka.insurancequoter.back.calculation.infrastructure.adapter.in.rest.dto.response.PremiumByLocationResponse;
@@ -43,21 +44,26 @@ class CalculationControllerTest {
     private CalculatePremiumUseCase calculatePremiumUseCase;
 
     @Mock
+    private GetCalculationResultUseCase getCalculationResultUseCase;
+
+    @Mock
+    private AcceptQuoteUseCase acceptQuoteUseCase;
+
+    @Mock
     private CalculationRestMapper calculationRestMapper;
 
     private MockMvc mockMvc;
 
     private static final String FOLIO = "FOL-2026-00042";
     private static final String URL = "/v1/quotes/" + FOLIO + "/calculate";
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().findAndRegisterModules();
-
     @BeforeEach
     void setUp() {
         LocalValidatorFactoryBean validator = new LocalValidatorFactoryBean();
         validator.afterPropertiesSet();
 
         CalculationController controller = new CalculationController(
-                calculatePremiumUseCase, calculationRestMapper);
+                calculatePremiumUseCase, getCalculationResultUseCase,
+                acceptQuoteUseCase, calculationRestMapper);
 
         mockMvc = MockMvcBuilders
                 .standaloneSetup(controller)
@@ -190,7 +196,7 @@ class CalculationControllerTest {
         mockMvc.perform(post(URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"version\": 7}"))
-                .andExpect(status().isUnprocessableEntity())
+                .andExpect(status().is(422))
                 .andExpect(jsonPath("$.code").value("NO_CALCULABLE_LOCATIONS"));
     }
 
@@ -200,7 +206,7 @@ class CalculationControllerTest {
         mockMvc.perform(post(URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"version\": null}"))
-                .andExpect(status().isUnprocessableEntity())
+                .andExpect(status().is(422))
                 .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
     }
 

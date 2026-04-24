@@ -3,8 +3,11 @@ package com.sofka.insurancequoter.back.folio.infrastructure.adapter.in.rest;
 import com.sofka.insurancequoter.back.folio.application.usecase.CreateFolioCommand;
 import com.sofka.insurancequoter.back.folio.application.usecase.FolioCreationResult;
 import com.sofka.insurancequoter.back.folio.domain.port.in.CreateFolioUseCase;
+import com.sofka.insurancequoter.back.folio.domain.port.in.ListFoliosUseCase;
 import com.sofka.insurancequoter.back.folio.infrastructure.adapter.in.rest.dto.CreateFolioRequest;
+import com.sofka.insurancequoter.back.folio.infrastructure.adapter.in.rest.dto.FolioListResponseDto;
 import com.sofka.insurancequoter.back.folio.infrastructure.adapter.in.rest.dto.FolioResponse;
+import com.sofka.insurancequoter.back.folio.infrastructure.adapter.in.rest.mapper.FolioListRestMapper;
 import com.sofka.insurancequoter.back.folio.infrastructure.adapter.in.rest.mapper.FolioRestMapper;
 import com.sofka.insurancequoter.back.folio.infrastructure.adapter.in.rest.swaggerdocs.FolioApi;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +21,14 @@ import org.springframework.web.bind.annotation.RestController;
 public class FolioController implements FolioApi {
 
     private final CreateFolioUseCase createFolioUseCase;
+    private final ListFoliosUseCase listFoliosUseCase;
     private final FolioRestMapper folioRestMapper;
+    private final FolioListRestMapper folioListRestMapper;
+
+    @Override
+    public ResponseEntity<FolioListResponseDto> listFolios() {
+        return ResponseEntity.ok(folioListRestMapper.toResponse(listFoliosUseCase.listFolios()));
+    }
 
     @Override
     public ResponseEntity<FolioResponse> createFolio(CreateFolioRequest request) {

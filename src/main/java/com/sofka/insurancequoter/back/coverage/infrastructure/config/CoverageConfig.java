@@ -4,13 +4,17 @@ import com.sofka.insurancequoter.back.coverage.application.usecase.GetCoverageOp
 import com.sofka.insurancequoter.back.coverage.application.usecase.SaveCoverageOptionsUseCaseImpl;
 import com.sofka.insurancequoter.back.coverage.domain.port.in.GetCoverageOptionsUseCase;
 import com.sofka.insurancequoter.back.coverage.domain.port.in.SaveCoverageOptionsUseCase;
+import com.sofka.insurancequoter.back.coverage.domain.port.out.ActiveGuaranteeReader;
 import com.sofka.insurancequoter.back.coverage.domain.port.out.GuaranteeCatalogClient;
+import com.sofka.insurancequoter.back.coverage.domain.service.CoverageDerivationService;
 import com.sofka.insurancequoter.back.coverage.infrastructure.adapter.in.rest.mapper.CoverageRestMapper;
 import com.sofka.insurancequoter.back.coverage.infrastructure.adapter.out.http.adapter.GuaranteeCatalogClientAdapter;
+import com.sofka.insurancequoter.back.coverage.infrastructure.adapter.out.persistence.adapter.ActiveGuaranteeJpaAdapter;
 import com.sofka.insurancequoter.back.coverage.infrastructure.adapter.out.persistence.adapter.CoverageOptionJpaAdapter;
 import com.sofka.insurancequoter.back.coverage.infrastructure.adapter.out.persistence.mappers.CoverageOptionPersistenceMapper;
 import com.sofka.insurancequoter.back.coverage.infrastructure.adapter.out.persistence.repositories.CoverageOptionJpaRepository;
 import com.sofka.insurancequoter.back.folio.infrastructure.adapter.out.persistence.repositories.QuoteJpaRepository;
+import com.sofka.insurancequoter.back.location.infrastructure.adapter.out.persistence.repositories.LocationJpaRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -41,16 +45,30 @@ public class CoverageConfig {
     }
 
     @Bean
+    public CoverageDerivationService coverageDerivationService() {
+        return new CoverageDerivationService();
+    }
+
+    @Bean
+    public ActiveGuaranteeReader activeGuaranteeReader(
+            QuoteJpaRepository quoteJpaRepository,
+            LocationJpaRepository locationJpaRepository) {
+        return new ActiveGuaranteeJpaAdapter(quoteJpaRepository, locationJpaRepository);
+    }
+
+    @Bean
     public GetCoverageOptionsUseCase getCoverageOptionsUseCase(
-            CoverageOptionJpaAdapter adapter) {
-        return new GetCoverageOptionsUseCaseImpl(adapter, adapter);
+            CoverageOptionJpaAdapter adapter,
+            ActiveGuaranteeReader activeGuaranteeReader,
+            CoverageDerivationService coverageDerivationService) {
+        return new GetCoverageOptionsUseCaseImpl(adapter, adapter, activeGuaranteeReader, coverageDerivationService);
     }
 
     @Bean
     public SaveCoverageOptionsUseCase saveCoverageOptionsUseCase(
             CoverageOptionJpaAdapter adapter,
-            GuaranteeCatalogClient guaranteeCatalogClient) {
-        return new SaveCoverageOptionsUseCaseImpl(adapter, adapter, guaranteeCatalogClient);
+            CoverageDerivationService coverageDerivationService) {
+        return new SaveCoverageOptionsUseCaseImpl(adapter, adapter, coverageDerivationService);
     }
 
     @Bean

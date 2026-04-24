@@ -23,15 +23,21 @@ import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import java.time.Instant;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@SuppressWarnings("java:S100")
 @ExtendWith(MockitoExtension.class)
 class LocationLayoutControllerTest {
+
+    private static final String FOLIO = "FOL-2026-00042";
+    private static final String FOLIO_NOT_FOUND = "FOL-9999-99999";
+    private static final String LAYOUT_URL = "/v1/quotes/FOL-2026-00042/locations/layout";
+    private static final String LAYOUT_URL_NOT_FOUND = "/v1/quotes/FOL-9999-99999/locations/layout";
+    private static final String JSON_CODE = "$.code";
 
     @Mock
     private GetLocationLayoutUseCase getLayoutUseCase;
@@ -61,16 +67,16 @@ class LocationLayoutControllerTest {
     void shouldReturn200WithLayout_whenGetLayoutAndFolioExists() throws Exception {
         // GIVEN
         GetLayoutResult result = new GetLayoutResult(
-                "FOL-2026-00042",
+                FOLIO,
                 new LayoutConfiguration(3, LocationType.MULTIPLE),
                 2L
         );
-        when(getLayoutUseCase.getLayout("FOL-2026-00042")).thenReturn(result);
+        when(getLayoutUseCase.getLayout(FOLIO)).thenReturn(result);
 
         // WHEN / THEN
-        mockMvc.perform(get("/v1/quotes/FOL-2026-00042/locations/layout"))
+        mockMvc.perform(get(LAYOUT_URL))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.folioNumber").value("FOL-2026-00042"))
+                .andExpect(jsonPath("$.folioNumber").value(FOLIO))
                 .andExpect(jsonPath("$.layoutConfiguration.numberOfLocations").value(3))
                 .andExpect(jsonPath("$.layoutConfiguration.locationType").value("MULTIPLE"))
                 .andExpect(jsonPath("$.version").value(2));
@@ -80,14 +86,14 @@ class LocationLayoutControllerTest {
     @Test
     void shouldReturn404_whenGetLayoutAndFolioNotFound() throws Exception {
         // GIVEN
-        when(getLayoutUseCase.getLayout("FOL-9999-99999"))
-                .thenThrow(new FolioNotFoundException("FOL-9999-99999"));
+        when(getLayoutUseCase.getLayout(FOLIO_NOT_FOUND))
+                .thenThrow(new FolioNotFoundException(FOLIO_NOT_FOUND));
 
         // WHEN / THEN
-        mockMvc.perform(get("/v1/quotes/FOL-9999-99999/locations/layout"))
+        mockMvc.perform(get(LAYOUT_URL_NOT_FOUND))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error").value("Folio not found"))
-                .andExpect(jsonPath("$.code").value("FOLIO_NOT_FOUND"));
+                .andExpect(jsonPath(JSON_CODE).value("FOLIO_NOT_FOUND"));
     }
 
     // CRITERIO-2.1: PUT 200 saves layout successfully
@@ -95,7 +101,7 @@ class LocationLayoutControllerTest {
     void shouldReturn200_whenSaveLayoutSucceeds() throws Exception {
         // GIVEN
         SaveLayoutResult result = new SaveLayoutResult(
-                "FOL-2026-00042",
+                FOLIO,
                 new LayoutConfiguration(3, LocationType.MULTIPLE),
                 NOW,
                 2L
@@ -103,7 +109,7 @@ class LocationLayoutControllerTest {
         when(saveLayoutUseCase.saveLayout(any())).thenReturn(result);
 
         // WHEN / THEN
-        mockMvc.perform(put("/v1/quotes/FOL-2026-00042/locations/layout")
+        mockMvc.perform(put(LAYOUT_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -115,7 +121,7 @@ class LocationLayoutControllerTest {
                                 }
                                 """))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.folioNumber").value("FOL-2026-00042"))
+                .andExpect(jsonPath("$.folioNumber").value(FOLIO))
                 .andExpect(jsonPath("$.layoutConfiguration.numberOfLocations").value(3))
                 .andExpect(jsonPath("$.version").value(2));
     }
@@ -125,10 +131,10 @@ class LocationLayoutControllerTest {
     void shouldReturn404_whenSaveLayoutAndFolioNotFound() throws Exception {
         // GIVEN
         when(saveLayoutUseCase.saveLayout(any()))
-                .thenThrow(new FolioNotFoundException("FOL-9999-99999"));
+                .thenThrow(new FolioNotFoundException(FOLIO_NOT_FOUND));
 
         // WHEN / THEN
-        mockMvc.perform(put("/v1/quotes/FOL-9999-99999/locations/layout")
+        mockMvc.perform(put(LAYOUT_URL_NOT_FOUND)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -140,7 +146,7 @@ class LocationLayoutControllerTest {
                                 }
                                 """))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.code").value("FOLIO_NOT_FOUND"));
+                .andExpect(jsonPath(JSON_CODE).value("FOLIO_NOT_FOUND"));
     }
 
     // CRITERIO-2.4: PUT 409 on optimistic lock conflict
@@ -151,7 +157,7 @@ class LocationLayoutControllerTest {
                 .thenThrow(new OptimisticLockingFailureException("version conflict"));
 
         // WHEN / THEN
-        mockMvc.perform(put("/v1/quotes/FOL-2026-00042/locations/layout")
+        mockMvc.perform(put(LAYOUT_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -164,14 +170,14 @@ class LocationLayoutControllerTest {
                                 """))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.error").value("Optimistic lock conflict"))
-                .andExpect(jsonPath("$.code").value("VERSION_CONFLICT"));
+                .andExpect(jsonPath(JSON_CODE).value("VERSION_CONFLICT"));
     }
 
     // CRITERIO-2.6: PUT 422 when layoutConfiguration is null
     @Test
     void shouldReturn422_whenLayoutConfigurationIsMissing() throws Exception {
         // WHEN / THEN
-        mockMvc.perform(put("/v1/quotes/FOL-2026-00042/locations/layout")
+        mockMvc.perform(put(LAYOUT_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -179,14 +185,14 @@ class LocationLayoutControllerTest {
                                 }
                                 """))
                 .andExpect(status().is(422))
-                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+                .andExpect(jsonPath(JSON_CODE).value("VALIDATION_ERROR"));
     }
 
     // PUT 422 when version is null
     @Test
     void shouldReturn422_whenVersionIsMissing() throws Exception {
         // WHEN / THEN
-        mockMvc.perform(put("/v1/quotes/FOL-2026-00042/locations/layout")
+        mockMvc.perform(put(LAYOUT_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -197,6 +203,6 @@ class LocationLayoutControllerTest {
                                 }
                                 """))
                 .andExpect(status().is(422))
-                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+                .andExpect(jsonPath(JSON_CODE).value("VALIDATION_ERROR"));
     }
 }

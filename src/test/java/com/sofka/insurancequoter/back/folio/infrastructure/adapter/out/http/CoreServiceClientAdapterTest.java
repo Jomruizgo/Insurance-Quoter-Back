@@ -10,6 +10,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@SuppressWarnings("java:S100")
 class CoreServiceClientAdapterTest {
 
     @RegisterExtension

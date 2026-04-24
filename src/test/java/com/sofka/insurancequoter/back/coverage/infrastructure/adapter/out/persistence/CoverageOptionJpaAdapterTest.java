@@ -95,7 +95,7 @@ class CoverageOptionJpaAdapterTest {
                 .coinsurancePercentage(new BigDecimal("80.0"))
                 .build();
         when(coverageOptionJpaRepository.saveAll(any())).thenReturn(List.of(savedJpa));
-        when(quoteJpaRepository.save(any())).thenReturn(quote);
+        when(quoteJpaRepository.saveAndFlush(any())).thenReturn(quote);
 
         // WHEN
         List<CoverageOption> result = adapter.replaceAll(FOLIO, List.of(option));
@@ -106,7 +106,7 @@ class CoverageOptionJpaAdapterTest {
         assertThat(result.get(0).description()).isEqualTo("Incendio edificios");
         verify(coverageOptionJpaRepository).deleteAllByQuote_Id(1L);
         verify(coverageOptionJpaRepository).saveAll(any());
-        verify(quoteJpaRepository).save(any());
+        verify(quoteJpaRepository).saveAndFlush(any());
     }
 
     // --- #186: assertFolioExists throws FolioNotFoundException when folio missing ---

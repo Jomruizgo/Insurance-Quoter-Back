@@ -20,6 +20,7 @@ class LocationLayoutRestMapperTest {
 
     private final LocationLayoutRestMapper mapper = new LocationLayoutRestMapper();
 
+    private static final String FOLIO = "FOL-2026-00042";
     private static final Instant NOW = Instant.parse("2026-04-21T10:00:00Z");
 
     // GetLayoutResult → GetLayoutResponse
@@ -27,7 +28,7 @@ class LocationLayoutRestMapperTest {
     void shouldMapGetLayoutResultToResponse() {
         // GIVEN
         GetLayoutResult result = new GetLayoutResult(
-                "FOL-2026-00042",
+                FOLIO,
                 new LayoutConfiguration(3, LocationType.MULTIPLE),
                 2L
         );
@@ -36,7 +37,7 @@ class LocationLayoutRestMapperTest {
         GetLayoutResponse response = mapper.toGetResponse(result);
 
         // THEN
-        assertThat(response.folioNumber()).isEqualTo("FOL-2026-00042");
+        assertThat(response.folioNumber()).isEqualTo(FOLIO);
         assertThat(response.version()).isEqualTo(2L);
         assertThat(response.layoutConfiguration().numberOfLocations()).isEqualTo(3);
         assertThat(response.layoutConfiguration().locationType()).isEqualTo("MULTIPLE");
@@ -47,7 +48,7 @@ class LocationLayoutRestMapperTest {
     void shouldMapNullLayoutConfigurationToNullFields() {
         // GIVEN
         GetLayoutResult result = new GetLayoutResult(
-                "FOL-2026-00042",
+                FOLIO,
                 new LayoutConfiguration(null, null),
                 1L
         );
@@ -70,10 +71,10 @@ class LocationLayoutRestMapperTest {
         );
 
         // WHEN
-        SaveLayoutCommand command = mapper.toCommand("FOL-2026-00042", request);
+        SaveLayoutCommand command = mapper.toCommand(FOLIO, request);
 
         // THEN
-        assertThat(command.folioNumber()).isEqualTo("FOL-2026-00042");
+        assertThat(command.folioNumber()).isEqualTo(FOLIO);
         assertThat(command.version()).isEqualTo(3L);
         assertThat(command.layoutConfiguration().numberOfLocations()).isEqualTo(2);
         assertThat(command.layoutConfiguration().locationType()).isEqualTo(LocationType.SINGLE);
@@ -84,7 +85,7 @@ class LocationLayoutRestMapperTest {
     void shouldMapSaveLayoutResultToResponse() {
         // GIVEN
         SaveLayoutResult result = new SaveLayoutResult(
-                "FOL-2026-00042",
+                FOLIO,
                 new LayoutConfiguration(2, LocationType.SINGLE),
                 NOW,
                 4L
@@ -94,7 +95,7 @@ class LocationLayoutRestMapperTest {
         SaveLayoutResponse response = mapper.toSaveResponse(result);
 
         // THEN
-        assertThat(response.folioNumber()).isEqualTo("FOL-2026-00042");
+        assertThat(response.folioNumber()).isEqualTo(FOLIO);
         assertThat(response.updatedAt()).isEqualTo(NOW);
         assertThat(response.version()).isEqualTo(4L);
         assertThat(response.layoutConfiguration().locationType()).isEqualTo("SINGLE");

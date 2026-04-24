@@ -160,8 +160,6 @@ class PremiumCalculationIntegrationTest {
         QuoteJpa quote = createQuote(FOLIO);
         long version = quote.getVersion();
 
-        // TODO: persist a fully populated Location and CoverageOption via JPA before calling POST
-
         // WHEN / THEN
         mockMvc.perform(post("/v1/quotes/{folio}/calculate", FOLIO)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -188,8 +186,6 @@ class PremiumCalculationIntegrationTest {
         QuoteJpa quote = createQuote(FOLIO);
         long version = quote.getVersion();
 
-        // TODO: persist one complete and one incomplete Location via JPA
-
         // WHEN / THEN
         mockMvc.perform(post("/v1/quotes/{folio}/calculate", FOLIO)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -214,15 +210,13 @@ class PremiumCalculationIntegrationTest {
         QuoteJpa quote = createQuote(FOLIO);
         long version = quote.getVersion();
 
-        // TODO: persist a Location missing zipCode via JPA
-
         // WHEN / THEN
         mockMvc.perform(post("/v1/quotes/{folio}/calculate", FOLIO)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"version": %d}
                                 """.formatted(version)))
-                .andExpect(status().isUnprocessableEntity())
+                .andExpect(status().is(422))
                 .andExpect(jsonPath("$.code").value("NO_CALCULABLE_LOCATIONS"));
     }
 

@@ -122,7 +122,8 @@ class CalculatePremiumUseCaseImplTest {
         // GIVEN
         when(quoteCalculationReader.getSnapshot(FOLIO)).thenThrow(new FolioNotFoundException(FOLIO));
         // WHEN / THEN
-        assertThatThrownBy(() -> useCase.calculate(new CalculatePremiumCommand(FOLIO, VERSION)))
+        var command = new CalculatePremiumCommand(FOLIO, VERSION);
+        assertThatThrownBy(() -> useCase.calculate(command))
                 .isInstanceOf(FolioNotFoundException.class);
     }
 
@@ -133,7 +134,8 @@ class CalculatePremiumUseCaseImplTest {
                 new QuoteCalculationSnapshot(FOLIO, 8L, List.of(completeLocation(1, BigDecimal.valueOf(1_000_000))), List.of())
         );
         // WHEN / THEN
-        assertThatThrownBy(() -> useCase.calculate(new CalculatePremiumCommand(FOLIO, VERSION)))
+        var command = new CalculatePremiumCommand(FOLIO, VERSION);
+        assertThatThrownBy(() -> useCase.calculate(command))
                 .isInstanceOf(VersionConflictException.class);
     }
 

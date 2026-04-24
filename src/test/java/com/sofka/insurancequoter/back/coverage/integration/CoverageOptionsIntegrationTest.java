@@ -191,26 +191,31 @@ class CoverageOptionsIntegrationTest {
                 .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
     }
 
-    // --- #200: GET on folio with no coverage options returns 200 with empty array ---
+    // --- #200 / #251: GET on folio with no saved coverage options derives them from guarantees.
+    // The test folio has no locations, so no active guarantees -> only COV-BI is derived (always present). ---
 
     @Test
-    void shouldReturn200WithEmptyArray_whenFolioHasNoCoverageOptions() throws Exception {
+    void shouldReturn200WithDerivedCovBi_whenFolioHasNoCoverageOptionsAndNoLocations() throws Exception {
         mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
                         .get("/v1/quotes/{folio}/coverage-options", FOLIO))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.folioNumber").value(FOLIO))
                 .andExpect(jsonPath("$.coverageOptions").isArray())
-                .andExpect(jsonPath("$.coverageOptions").isEmpty());
+                .andExpect(jsonPath("$.coverageOptions.length()").value(1))
+                .andExpect(jsonPath("$.coverageOptions[0].code").value("COV-BI"))
+                .andExpect(jsonPath("$.coverageOptions[0].selected").value(false));
     }
 
-    // --- R-009: PUT with empty list deletes all existing options and returns empty array ---
+    // --- R-009 / #251: PUT with empty list deletes all persisted options.
+    // PUT response itself returns the empty list (what was saved).
+    // Subsequent GET derives from guarantees: folio has no locations -> only COV-BI is returned. ---
 
     @Test
-    void shouldReturnEmptyArray_whenPutWithEmptyCoverageOptionsList() throws Exception {
+    void shouldDeriveFromGuarantees_afterPutWithEmptyCoverageOptionsList() throws Exception {
         stubGuaranteeCatalog();
         long version = quoteJpaRepository.findByFolioNumber(FOLIO).orElseThrow().getVersion();
 
-        // First PUT: persist two options
+        // First PUT: persist one option
         mockMvc.perform(put("/v1/quotes/{folio}/coverage-options", FOLIO)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -225,7 +230,7 @@ class CoverageOptionsIntegrationTest {
 
         long versionAfterFirstPut = quoteJpaRepository.findByFolioNumber(FOLIO).orElseThrow().getVersion();
 
-        // Second PUT: replace with empty list — all previous options should be deleted
+        // Second PUT: replace with empty list — all previous options are deleted; PUT response is empty
         mockMvc.perform(put("/v1/quotes/{folio}/coverage-options", FOLIO)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -238,10 +243,12 @@ class CoverageOptionsIntegrationTest {
                 .andExpect(jsonPath("$.coverageOptions").isArray())
                 .andExpect(jsonPath("$.coverageOptions").isEmpty());
 
-        // GET confirms no options remain
+        // GET: no persisted options -> derivation kicks in -> folio has no locations -> only COV-BI
         mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
                         .get("/v1/quotes/{folio}/coverage-options", FOLIO))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.coverageOptions").isEmpty());
+                .andExpect(jsonPath("$.coverageOptions.length()").value(1))
+                .andExpect(jsonPath("$.coverageOptions[0].code").value("COV-BI"))
+                .andExpect(jsonPath("$.coverageOptions[0].selected").value(false));
     }
 }
