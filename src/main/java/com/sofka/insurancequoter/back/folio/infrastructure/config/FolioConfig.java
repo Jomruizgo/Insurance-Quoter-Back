@@ -7,6 +7,7 @@ import com.sofka.insurancequoter.back.folio.domain.port.in.CreateFolioUseCase;
 import com.sofka.insurancequoter.back.folio.domain.port.in.GetQuoteStateUseCase;
 import com.sofka.insurancequoter.back.folio.domain.port.in.ListFoliosUseCase;
 import com.sofka.insurancequoter.back.folio.domain.port.out.CoreServiceClient;
+import com.sofka.insurancequoter.back.folio.domain.port.out.CoverageOptionsStateReader;
 import com.sofka.insurancequoter.back.folio.domain.port.out.FolioListQuery;
 import com.sofka.insurancequoter.back.folio.domain.port.out.LocationStateReader;
 import com.sofka.insurancequoter.back.folio.domain.port.out.QuoteRepository;
@@ -40,8 +41,9 @@ public class FolioConfig {
 
     @Bean
     public GetQuoteStateUseCase getQuoteStateUseCase(QuoteStateQuery quoteStateQuery,
-                                                      LocationStateReader locationStateReader) {
-        return new GetQuoteStateUseCaseImpl(quoteStateQuery, locationStateReader);
+                                                      LocationStateReader locationStateReader,
+                                                      CoverageOptionsStateReader coverageOptionsStateReader) {
+        return new GetQuoteStateUseCaseImpl(quoteStateQuery, locationStateReader, coverageOptionsStateReader);
     }
 
     @Bean

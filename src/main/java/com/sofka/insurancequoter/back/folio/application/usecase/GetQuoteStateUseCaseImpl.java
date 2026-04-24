@@ -2,6 +2,7 @@ package com.sofka.insurancequoter.back.folio.application.usecase;
 
 import com.sofka.insurancequoter.back.folio.domain.model.*;
 import com.sofka.insurancequoter.back.folio.domain.port.in.GetQuoteStateUseCase;
+import com.sofka.insurancequoter.back.folio.domain.port.out.CoverageOptionsStateReader;
 import com.sofka.insurancequoter.back.folio.domain.port.out.LocationStateReader;
 import com.sofka.insurancequoter.back.folio.domain.port.out.QuoteStateQuery;
 
@@ -9,11 +10,14 @@ public class GetQuoteStateUseCaseImpl implements GetQuoteStateUseCase {
 
     private final QuoteStateQuery quoteStateQuery;
     private final LocationStateReader locationStateReader;
+    private final CoverageOptionsStateReader coverageOptionsStateReader;
 
     public GetQuoteStateUseCaseImpl(QuoteStateQuery quoteStateQuery,
-                                    LocationStateReader locationStateReader) {
+                                    LocationStateReader locationStateReader,
+                                    CoverageOptionsStateReader coverageOptionsStateReader) {
         this.quoteStateQuery = quoteStateQuery;
         this.locationStateReader = locationStateReader;
+        this.coverageOptionsStateReader = coverageOptionsStateReader;
     }
 
     @Override
@@ -25,7 +29,7 @@ public class GetQuoteStateUseCaseImpl implements GetQuoteStateUseCase {
                 evaluateGeneralInfo(snapshot),
                 evaluateLayout(snapshot),
                 evaluateLocations(locationSummary),
-                SectionStatus.PENDING,                      // coverageOptions — requires SPEC-007
+                coverageOptionsStateReader.readByFolioNumber(folioNumber),
                 evaluateCalculation(snapshot.quoteStatus())
         );
 
