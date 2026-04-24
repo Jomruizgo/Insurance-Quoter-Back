@@ -87,13 +87,13 @@ class UpdateGeneralInfoUseCaseImplTest {
                 .thenReturn(Optional.empty());
 
         // WHEN / THEN
-        assertThatThrownBy(() -> useCase.updateGeneralInfo(
-                new UpdateGeneralInfoCommand(
-                        "UNKNOWN",
-                        new InsuredData("N", "X", "x@x.com", "1"),
-                        new UnderwritingInfo("S", "A", RiskClassification.STANDARD, BusinessType.COMMERCIAL),
-                        0L
-                )))
+        var command = new UpdateGeneralInfoCommand(
+                "UNKNOWN",
+                new InsuredData("N", "X", "x@x.com", "1"),
+                new UnderwritingInfo("S", "A", RiskClassification.STANDARD, BusinessType.COMMERCIAL),
+                0L
+        );
+        assertThatThrownBy(() -> useCase.updateGeneralInfo(command))
                 .isInstanceOf(FolioNotFoundException.class);
     }
 
@@ -104,7 +104,8 @@ class UpdateGeneralInfoUseCaseImplTest {
                 .thenReturn(Optional.of(storedGeneralInfo(2L)));
 
         // WHEN / THEN
-        assertThatThrownBy(() -> useCase.updateGeneralInfo(buildCommand(1L)))
+        var command = buildCommand(1L);
+        assertThatThrownBy(() -> useCase.updateGeneralInfo(command))
                 .isInstanceOf(VersionConflictException.class);
     }
 }

@@ -74,7 +74,7 @@ class GetQuoteStateUseCaseImplTest {
         QuoteState state = useCase.getState("FOL-001");
 
         // THEN
-        assertThat(state.completionPercentage()).isEqualTo(0);
+        assertThat(state.completionPercentage()).isZero();
         assertThat(state.sections().layout()).isEqualTo(SectionStatus.PENDING);
         assertThat(state.sections().locations()).isEqualTo(SectionStatus.PENDING);
     }

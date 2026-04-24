@@ -3,6 +3,10 @@ package com.sofka.insurancequoter.back.location.infrastructure.adapter.in.rest;
 import com.sofka.insurancequoter.back.location.domain.port.in.*;
 import com.sofka.insurancequoter.back.location.infrastructure.adapter.in.rest.dto.request.PatchLocationRequest;
 import com.sofka.insurancequoter.back.location.infrastructure.adapter.in.rest.dto.request.ReplaceLocationsRequest;
+import com.sofka.insurancequoter.back.location.infrastructure.adapter.in.rest.dto.response.LocationPatchWrapperResponse;
+import com.sofka.insurancequoter.back.location.infrastructure.adapter.in.rest.dto.response.LocationsListResponse;
+import com.sofka.insurancequoter.back.location.infrastructure.adapter.in.rest.dto.response.LocationsListResponseWithTimestamp;
+import com.sofka.insurancequoter.back.location.infrastructure.adapter.in.rest.dto.response.LocationsSummaryWrapperResponse;
 import com.sofka.insurancequoter.back.location.infrastructure.adapter.in.rest.mapper.LocationRestMapper;
 import com.sofka.insurancequoter.back.location.infrastructure.adapter.in.rest.swaggerdocs.LocationApi;
 import jakarta.validation.Valid;
@@ -34,15 +38,15 @@ public class LocationController implements LocationApi {
 
     @Override
     @GetMapping
-    public ResponseEntity<?> getLocations(@PathVariable String folio) {
+    public ResponseEntity<LocationsListResponse> getLocations(@PathVariable String folio) {
         var result = getLocationsUseCase.getLocations(folio);
         return ResponseEntity.ok(mapper.toLocationsListResponse(result));
     }
 
     @Override
     @PutMapping
-    public ResponseEntity<?> replaceLocations(@PathVariable String folio,
-                                              @RequestBody @Valid ReplaceLocationsRequest request) {
+    public ResponseEntity<LocationsListResponseWithTimestamp> replaceLocations(@PathVariable String folio,
+                                                                               @RequestBody @Valid ReplaceLocationsRequest request) {
         var command = mapper.toReplaceCommand(folio, request);
         var result = replaceLocationsUseCase.replaceLocations(command);
         return ResponseEntity.ok(mapper.toLocationsListResponseWithTimestamp(result));
@@ -51,16 +55,16 @@ public class LocationController implements LocationApi {
     // NOTE: /summary must be declared BEFORE /{index} to avoid routing conflict
     @Override
     @GetMapping("/summary")
-    public ResponseEntity<?> getLocationsSummary(@PathVariable String folio) {
+    public ResponseEntity<LocationsSummaryWrapperResponse> getLocationsSummary(@PathVariable String folio) {
         var result = getLocationsSummaryUseCase.getSummary(folio);
         return ResponseEntity.ok(mapper.toSummaryWrapperResponse(result));
     }
 
     @Override
     @PatchMapping("/{index}")
-    public ResponseEntity<?> patchLocation(@PathVariable String folio,
-                                           @PathVariable int index,
-                                           @RequestBody PatchLocationRequest request) {
+    public ResponseEntity<LocationPatchWrapperResponse> patchLocation(@PathVariable String folio,
+                                                                      @PathVariable int index,
+                                                                      @RequestBody PatchLocationRequest request) {
         var command = mapper.toPatchCommand(folio, index, request);
         var result = patchLocationUseCase.patchLocation(command);
         return ResponseEntity.ok(mapper.toPatchWrapperResponse(result));

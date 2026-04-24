@@ -5,6 +5,9 @@ plugins {
     id("io.spring.dependency-management") version "1.1.7"
 }
 
+val springdocVersion = "2.8.8"
+val wiremockVersion = "3.13.0"
+
 group = "com.sofka.insurancequoter"
 version = "0.0.1-SNAPSHOT"
 
@@ -25,7 +28,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-flyway")
     implementation("org.flywaydb:flyway-core")
     implementation("org.flywaydb:flyway-database-postgresql")
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.8")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springdocVersion")
     compileOnly("org.projectlombok:lombok")
     developmentOnly("org.springframework.boot:spring-boot-docker-compose")
     runtimeOnly("org.postgresql:postgresql")
@@ -36,7 +39,7 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
     testImplementation("org.testcontainers:testcontainers-junit-jupiter")
     testImplementation("org.testcontainers:testcontainers-postgresql")
-    testImplementation("org.wiremock:wiremock-standalone:3.13.0")
+    testImplementation("org.wiremock:wiremock-standalone:$wiremockVersion")
     testCompileOnly("org.projectlombok:lombok")
     testAnnotationProcessor("org.projectlombok:lombok")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
