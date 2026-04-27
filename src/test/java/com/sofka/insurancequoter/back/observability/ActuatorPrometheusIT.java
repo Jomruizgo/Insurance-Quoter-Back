@@ -7,23 +7,23 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.client.RestClient;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(classes = InsuranceQuoterApplication.class, webEnvironment = SpringBootTest.WebEnvironment.MOCK)
+@SpringBootTest(
+        classes = InsuranceQuoterApplication.class,
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        properties = "management.endpoints.web.exposure.include=*"
+)
 @Testcontainers
 class ActuatorPrometheusIT {
 
@@ -33,10 +33,10 @@ class ActuatorPrometheusIT {
 
     static WireMockServer wireMock = new WireMockServer(WireMockConfiguration.wireMockConfig().dynamicPort());
 
-    @Autowired
-    private WebApplicationContext context;
+    @LocalServerPort
+    int port;
 
-    private MockMvc mockMvc;
+    RestClient client;
 
     @BeforeAll
     static void startWireMock() {
@@ -55,27 +55,36 @@ class ActuatorPrometheusIT {
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
+        client = RestClient.create("http://localhost:" + port);
     }
 
     @Test
-    void actuatorPrometheus_returns200_withJvmMetrics() throws Exception {
-        mockMvc.perform(get("/actuator/prometheus"))
-                .andExpect(status().isOk())
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("jvm_memory_used_bytes")));
+    void actuatorPrometheus_returns200_withJvmMetrics() {
+        String body = client.get()
+                .uri("/actuator/prometheus")
+                .retrieve()
+                .body(String.class);
+        assertThat(body).contains("jvm_memory_used_bytes");
     }
 
     @Test
-    void actuatorPrometheus_returns200_withHttpServerMetrics() throws Exception {
-        mockMvc.perform(get("/actuator/prometheus"))
-                .andExpect(status().isOk())
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("http_server_requests_seconds")));
+    void actuatorPrometheus_returns200_withHttpServerMetrics() {
+        // Make a request first so the HTTP timer has at least one observation
+        client.get().uri("/actuator/health").retrieve().toBodilessEntity();
+
+        String body = client.get()
+                .uri("/actuator/prometheus")
+                .retrieve()
+                .body(String.class);
+        assertThat(body).contains("http_server_requests_seconds");
     }
 
     @Test
-    void actuatorHealth_returns200_withDbUp() throws Exception {
-        mockMvc.perform(get("/actuator/health"))
-                .andExpect(status().isOk())
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("\"status\":\"UP\"")));
+    void actuatorHealth_returns200_withDbUp() {
+        String body = client.get()
+                .uri("/actuator/health")
+                .retrieve()
+                .body(String.class);
+        assertThat(body).contains("\"status\":\"UP\"");
     }
 }
