@@ -21,6 +21,7 @@ public class GetQuoteStateUseCaseImpl implements GetQuoteStateUseCase {
     }
 
     @Override
+    @io.micrometer.observation.annotation.Observed(name = "folio.state.get")
     public QuoteState getState(String folioNumber) {
         QuoteSnapshot snapshot = quoteStateQuery.findByFolioNumber(folioNumber);
         LocationStateSummary locationSummary = locationStateReader.readByFolioNumber(folioNumber);

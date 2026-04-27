@@ -22,6 +22,7 @@ import com.sofka.insurancequoter.back.coverage.infrastructure.adapter.out.persis
 import com.sofka.insurancequoter.back.folio.infrastructure.adapter.out.persistence.repositories.QuoteJpaRepository;
 import com.sofka.insurancequoter.back.location.infrastructure.adapter.out.persistence.mappers.LocationPersistenceMapper;
 import com.sofka.insurancequoter.back.location.infrastructure.adapter.out.persistence.repositories.LocationJpaRepository;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -84,13 +85,15 @@ public class CalculationConfig {
             CalculationResultJpaAdapter calculationResultJpaAdapter,
             TariffClient tariffClient,
             GuaranteeCatalogClient guaranteeCatalogClient,
-            CalculationService calculationService) {
+            CalculationService calculationService,
+            MeterRegistry meterRegistry) {
         return new CalculatePremiumUseCaseImpl(
                 (QuoteCalculationReader) calculationResultJpaAdapter,
                 (CalculationResultRepository) calculationResultJpaAdapter,
                 tariffClient,
                 guaranteeCatalogClient,
-                calculationService
+                calculationService,
+                meterRegistry
         );
     }
 
@@ -104,9 +107,11 @@ public class CalculationConfig {
 
     @Bean
     public AcceptQuoteUseCase acceptQuoteUseCase(
-            CalculationResultJpaAdapter calculationResultJpaAdapter) {
+            CalculationResultJpaAdapter calculationResultJpaAdapter,
+            MeterRegistry meterRegistry) {
         return new AcceptQuoteUseCaseImpl(
-                (AcceptQuoteRepository) calculationResultJpaAdapter
+                (AcceptQuoteRepository) calculationResultJpaAdapter,
+                meterRegistry
         );
     }
 }

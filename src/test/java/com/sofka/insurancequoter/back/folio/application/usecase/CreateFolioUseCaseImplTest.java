@@ -4,9 +4,10 @@ import com.sofka.insurancequoter.back.folio.domain.model.Quote;
 import com.sofka.insurancequoter.back.folio.domain.model.QuoteStatus;
 import com.sofka.insurancequoter.back.folio.domain.port.out.CoreServiceClient;
 import com.sofka.insurancequoter.back.folio.domain.port.out.QuoteRepository;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -34,8 +35,12 @@ class CreateFolioUseCaseImplTest {
     @Mock
     private CoreServiceClient coreServiceClient;
 
-    @InjectMocks
     private CreateFolioUseCaseImpl useCase;
+
+    @BeforeEach
+    void setUp() {
+        useCase = new CreateFolioUseCaseImpl(quoteRepository, coreServiceClient, new SimpleMeterRegistry());
+    }
 
     // --- CRITERIO-1.2: Idempotencia — folio existente en CREATED ---
 

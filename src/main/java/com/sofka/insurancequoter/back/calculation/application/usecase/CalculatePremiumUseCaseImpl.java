@@ -13,6 +13,9 @@ import com.sofka.insurancequoter.back.calculation.domain.port.out.TariffClient;
 import com.sofka.insurancequoter.back.calculation.domain.service.CalculationService;
 import com.sofka.insurancequoter.back.coverage.domain.port.out.GuaranteeCatalogClient;
 import com.sofka.insurancequoter.back.location.application.usecase.VersionConflictException;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.observation.annotation.Observed;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -29,20 +32,31 @@ public class CalculatePremiumUseCaseImpl implements CalculatePremiumUseCase {
     private final TariffClient tariffClient;
     private final GuaranteeCatalogClient guaranteeCatalogClient;
     private final CalculationService calculationService;
+    private final Counter calculatedCounter;
+    private final Counter errorCounter;
 
     public CalculatePremiumUseCaseImpl(QuoteCalculationReader quoteCalculationReader,
                                        CalculationResultRepository calculationResultRepository,
                                        TariffClient tariffClient,
                                        GuaranteeCatalogClient guaranteeCatalogClient,
-                                       CalculationService calculationService) {
+                                       CalculationService calculationService,
+                                       MeterRegistry meterRegistry) {
         this.quoteCalculationReader = quoteCalculationReader;
         this.calculationResultRepository = calculationResultRepository;
         this.tariffClient = tariffClient;
         this.guaranteeCatalogClient = guaranteeCatalogClient;
         this.calculationService = calculationService;
+        this.calculatedCounter = Counter.builder("premium.calculated")
+                .description("Successful premium calculations")
+                .register(meterRegistry);
+        this.errorCounter = Counter.builder("calculation.errors")
+                .tag("errorType", "NoCalculableLocations")
+                .description("Premium calculations failed due to no calculable locations")
+                .register(meterRegistry);
     }
 
     @Override
+    @Observed(name = "premium.calculate")
     public CalculationResult calculate(CalculatePremiumCommand command) {
         // 1. Load snapshot — throws FolioNotFoundException if not found
         QuoteCalculationSnapshot snapshot = quoteCalculationReader.getSnapshot(command.folioNumber());
@@ -69,6 +83,7 @@ public class CalculatePremiumUseCaseImpl implements CalculatePremiumUseCase {
         // 6. Validate at least one calculable location
         boolean hasCalculable = premiumsByLocation.stream().anyMatch(PremiumByLocation::calculable);
         if (!hasCalculable) {
+            errorCounter.increment();
             throw new NoCalculableLocationsException();
         }
 
@@ -97,6 +112,7 @@ public class CalculatePremiumUseCaseImpl implements CalculatePremiumUseCase {
         long newVersion = calculationResultRepository.persist(command.folioNumber(), result);
 
         // 11. Return result with the real version
+        calculatedCounter.increment();
         return new CalculationResult(
                 result.folioNumber(),
                 result.netPremium(),

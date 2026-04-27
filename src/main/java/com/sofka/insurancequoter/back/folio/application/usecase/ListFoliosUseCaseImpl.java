@@ -26,6 +26,7 @@ public class ListFoliosUseCaseImpl implements ListFoliosUseCase {
     }
 
     @Override
+    @io.micrometer.observation.annotation.Observed(name = "folio.list")
     public List<FolioSummary> listFolios() {
         return folioListQuery.findAll().stream()
                 .map(this::enrich)

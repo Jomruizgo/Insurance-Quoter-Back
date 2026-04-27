@@ -1,6 +1,6 @@
 ---
 id: SPEC-008
-status: DRAFT
+status: APPROVED
 feature: observability
 created: 2026-04-27
 updated: 2026-04-27
