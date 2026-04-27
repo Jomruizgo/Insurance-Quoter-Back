@@ -111,18 +111,18 @@ class CoverageOptionsIntegrationTest {
                         .content("""
                                 {
                                   "coverageOptions": [
-                                    {"code":"GUA-FIRE","selected":true,"deductiblePercentage":2.0,"coinsurancePercentage":80.0},
-                                    {"code":"GUA-THEFT","selected":false,"deductiblePercentage":5.0,"coinsurancePercentage":100.0}
+                                    {"code":"COV-FIRE","selected":true,"deductiblePercentage":2.0,"coinsurancePercentage":80.0},
+                                    {"code":"COV-THEFT","selected":false,"deductiblePercentage":5.0,"coinsurancePercentage":100.0}
                                   ],
                                   "version": %d
                                 }
                                 """.formatted(version)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.folioNumber").value(FOLIO))
-                .andExpect(jsonPath("$.coverageOptions[0].code").value("GUA-FIRE"))
-                .andExpect(jsonPath("$.coverageOptions[0].description").value("Incendio edificios"))
+                .andExpect(jsonPath("$.coverageOptions[0].code").value("COV-FIRE"))
+                .andExpect(jsonPath("$.coverageOptions[0].description").value("Incendio y riesgos adicionales"))
                 .andExpect(jsonPath("$.coverageOptions[0].selected").value(true))
-                .andExpect(jsonPath("$.coverageOptions[1].code").value("GUA-THEFT"))
+                .andExpect(jsonPath("$.coverageOptions[1].code").value("COV-THEFT"))
                 .andExpect(jsonPath("$.coverageOptions[1].selected").value(false));
 
         // GET returns same persisted data
@@ -130,9 +130,9 @@ class CoverageOptionsIntegrationTest {
                         .get("/v1/quotes/{folio}/coverage-options", FOLIO))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.folioNumber").value(FOLIO))
-                .andExpect(jsonPath("$.coverageOptions[0].code").value("GUA-FIRE"))
-                .andExpect(jsonPath("$.coverageOptions[0].description").value("Incendio edificios"))
-                .andExpect(jsonPath("$.coverageOptions[1].code").value("GUA-THEFT"));
+                .andExpect(jsonPath("$.coverageOptions[0].code").value("COV-FIRE"))
+                .andExpect(jsonPath("$.coverageOptions[0].description").value("Incendio y riesgos adicionales"))
+                .andExpect(jsonPath("$.coverageOptions[1].code").value("COV-THEFT"));
     }
 
     // --- #198: PUT with stale version returns 409 and does not modify data ---
@@ -148,7 +148,7 @@ class CoverageOptionsIntegrationTest {
                         .content("""
                                 {
                                   "coverageOptions": [
-                                    {"code":"GUA-FIRE","selected":true,"deductiblePercentage":2.0,"coinsurancePercentage":80.0}
+                                    {"code":"COV-FIRE","selected":true,"deductiblePercentage":2.0,"coinsurancePercentage":80.0}
                                   ],
                                   "version": %d
                                 }
@@ -161,7 +161,7 @@ class CoverageOptionsIntegrationTest {
                         .content("""
                                 {
                                   "coverageOptions": [
-                                    {"code":"GUA-THEFT","selected":true,"deductiblePercentage":5.0,"coinsurancePercentage":100.0}
+                                    {"code":"COV-THEFT","selected":true,"deductiblePercentage":5.0,"coinsurancePercentage":100.0}
                                   ],
                                   "version": %d
                                 }
@@ -221,7 +221,7 @@ class CoverageOptionsIntegrationTest {
                         .content("""
                                 {
                                   "coverageOptions": [
-                                    {"code":"GUA-FIRE","selected":true,"deductiblePercentage":2.0,"coinsurancePercentage":80.0}
+                                    {"code":"COV-FIRE","selected":true,"deductiblePercentage":2.0,"coinsurancePercentage":80.0}
                                   ],
                                   "version": %d
                                 }

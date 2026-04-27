@@ -92,7 +92,7 @@ class GeneralInfoJpaAdapterTest {
         );
         when(quoteJpaRepository.findByFolioNumber("FOL-2026-00001"))
                 .thenReturn(Optional.of(buildJpaEntity()));
-        when(quoteJpaRepository.save(any())).thenReturn(buildJpaEntity());
+        when(quoteJpaRepository.saveAndFlush(any())).thenReturn(buildJpaEntity());
 
         // WHEN
         GeneralInfo result = adapter.save(toSave);
