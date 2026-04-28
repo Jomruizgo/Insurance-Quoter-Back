@@ -21,6 +21,8 @@ public interface LocationJpaRepository extends JpaRepository<LocationJpa, Long> 
 
     boolean existsByQuoteIdAndIndex(Long quoteId, Integer index);
 
+    int countByQuoteId(Long quoteId);
+
     @Modifying
     @Query("DELETE FROM LocationJpa l WHERE l.quoteId = :quoteId")
     void deleteByQuoteId(@Param("quoteId") Long quoteId);
