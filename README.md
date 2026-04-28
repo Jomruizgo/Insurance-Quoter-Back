@@ -170,5 +170,5 @@ Métricas expuestas en `/actuator/prometheus`. El endpoint `/actuator/health` mu
 | `core.service.base-url` | `http://localhost:8081` | URL base del core service |
 | `core.service.connect-timeout-ms` | `5000` | Timeout de conexión al core (ms) |
 | `core.service.read-timeout-ms` | `10000` | Timeout de lectura al core (ms) |
-| `OTEL_EXPORTER_OTLP_ENDPOINT` | `http://localhost:4319` | Endpoint OTLP gRPC para Jaeger |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | `http://localhost:4320/v1/traces` | Endpoint OTLP HTTP completo para Jaeger (debe incluir `/v1/traces`) |
 | `TRACING_SAMPLING_PROBABILITY` | `1.0` | Proporción de trazas exportadas (0.0–1.0) |
