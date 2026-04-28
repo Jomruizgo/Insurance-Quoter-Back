@@ -1,5 +1,6 @@
 package com.sofka.insurancequoter.back.folio.infrastructure.config;
 
+import com.sofka.insurancequoter.back.calculation.domain.port.in.GetCalculationResultUseCase;
 import com.sofka.insurancequoter.back.folio.application.usecase.CreateFolioUseCaseImpl;
 import com.sofka.insurancequoter.back.folio.application.usecase.GetQuoteStateUseCaseImpl;
 import com.sofka.insurancequoter.back.folio.application.usecase.ListFoliosUseCaseImpl;
@@ -51,7 +52,9 @@ public class FolioConfig {
     @Bean
     public ListFoliosUseCase listFoliosUseCase(FolioListQuery folioListQuery,
                                                 GetQuoteStateUseCase getQuoteStateUseCase,
-                                                CoreServiceClient coreServiceClient) {
-        return new ListFoliosUseCaseImpl(folioListQuery, getQuoteStateUseCase, coreServiceClient);
+                                                CoreServiceClient coreServiceClient,
+                                                GetCalculationResultUseCase getCalculationResultUseCase) {
+        return new ListFoliosUseCaseImpl(folioListQuery, getQuoteStateUseCase, coreServiceClient,
+                getCalculationResultUseCase);
     }
 }

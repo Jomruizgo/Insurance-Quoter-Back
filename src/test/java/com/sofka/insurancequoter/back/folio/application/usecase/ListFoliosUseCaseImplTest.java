@@ -1,5 +1,7 @@
 package com.sofka.insurancequoter.back.folio.application.usecase;
 
+import com.sofka.insurancequoter.back.calculation.domain.model.CalculationResult;
+import com.sofka.insurancequoter.back.calculation.domain.port.in.GetCalculationResultUseCase;
 import com.sofka.insurancequoter.back.folio.domain.model.FolioRaw;
 import com.sofka.insurancequoter.back.folio.domain.model.FolioSummary;
 import com.sofka.insurancequoter.back.folio.domain.model.QuoteState;
@@ -15,6 +17,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
@@ -34,16 +37,20 @@ class ListFoliosUseCaseImplTest {
     @Mock
     private CoreServiceClient coreServiceClient;
 
+    @Mock
+    private GetCalculationResultUseCase getCalculationResultUseCase;
+
     private ListFoliosUseCase useCase;
 
     private static final Instant NOW = Instant.parse("2026-04-20T10:00:00Z");
 
     @BeforeEach
     void setUp() {
-        useCase = new ListFoliosUseCaseImpl(folioListQuery, getQuoteStateUseCase, coreServiceClient);
+        useCase = new ListFoliosUseCaseImpl(folioListQuery, getQuoteStateUseCase, coreServiceClient,
+                getCalculationResultUseCase);
     }
 
-    // --- Happy path: lista con un folio ---
+    // --- Happy path: lista con un folio, con prima comercial calculada ---
 
     @Test
     void shouldReturnFolioSummaries_whenFoliosExist() {
@@ -52,9 +59,9 @@ class ListFoliosUseCaseImplTest {
                 "AGT-001", "CREATED", 1, NOW);
         when(folioListQuery.findAll()).thenReturn(List.of(raw));
         when(coreServiceClient.getAgentName("AGT-001")).thenReturn("Carlos López");
-
-        QuoteState state = buildState("FOL-2026-00001", 10);
-        when(getQuoteStateUseCase.getState("FOL-2026-00001")).thenReturn(state);
+        when(getQuoteStateUseCase.getState("FOL-2026-00001")).thenReturn(buildState("FOL-2026-00001", 10));
+        when(getCalculationResultUseCase.get("FOL-2026-00001"))
+                .thenReturn(buildCalculationResult("FOL-2026-00001", new BigDecimal("12500.00")));
 
         // WHEN
         List<FolioSummary> result = useCase.listFolios();
@@ -69,7 +76,7 @@ class ListFoliosUseCaseImplTest {
         assertThat(summary.status()).isEqualTo("CREATED");
         assertThat(summary.locationCount()).isEqualTo(1);
         assertThat(summary.completionPct()).isEqualTo(10);
-        assertThat(summary.commercialPremium()).isNull();
+        assertThat(summary.commercialPremium()).isEqualByComparingTo(new BigDecimal("12500.00"));
         assertThat(summary.updatedAt()).isEqualTo(NOW);
     }
 
@@ -150,6 +157,8 @@ class ListFoliosUseCaseImplTest {
         when(folioListQuery.findAll()).thenReturn(List.of(raw));
         when(coreServiceClient.getAgentName("AGT-005")).thenReturn("Laura Vega");
         when(getQuoteStateUseCase.getState("FOL-2026-00005")).thenReturn(buildState("FOL-2026-00005", 60));
+        when(getCalculationResultUseCase.get("FOL-2026-00005"))
+                .thenReturn(buildCalculationResult("FOL-2026-00005", new BigDecimal("5000.00")));
 
         // WHEN
         List<FolioSummary> result = useCase.listFolios();
@@ -158,12 +167,56 @@ class ListFoliosUseCaseImplTest {
         assertThat(result.get(0).completionPct()).isEqualTo(60);
     }
 
-    // --- Helper ---
+    // --- commercialPremium populated from GetCalculationResultUseCase ---
+
+    @Test
+    void shouldPopulateCommercialPremium_whenCalculationResultExists() {
+        // GIVEN
+        FolioRaw raw = new FolioRaw("FOL-2026-00006", "Corp W", "AGT-006", "IN_PROGRESS", 3, NOW);
+        when(folioListQuery.findAll()).thenReturn(List.of(raw));
+        when(coreServiceClient.getAgentName("AGT-006")).thenReturn("Mario Flores");
+        when(getQuoteStateUseCase.getState("FOL-2026-00006")).thenReturn(buildState("FOL-2026-00006", 80));
+        when(getCalculationResultUseCase.get("FOL-2026-00006"))
+                .thenReturn(buildCalculationResult("FOL-2026-00006", new BigDecimal("98765.43")));
+
+        // WHEN
+        List<FolioSummary> result = useCase.listFolios();
+
+        // THEN
+        assertThat(result.get(0).commercialPremium()).isEqualByComparingTo(new BigDecimal("98765.43"));
+    }
+
+    // --- commercialPremium is null when calculation result is not available ---
+
+    @Test
+    void shouldReturnNullCommercialPremium_whenGetCalculationResultUseCaseThrows() {
+        // GIVEN
+        FolioRaw raw = new FolioRaw("FOL-2026-00007", "Corp V", "AGT-007", "CREATED", 0, NOW);
+        when(folioListQuery.findAll()).thenReturn(List.of(raw));
+        when(coreServiceClient.getAgentName("AGT-007")).thenReturn("Sofia Ramos");
+        when(getQuoteStateUseCase.getState("FOL-2026-00007")).thenReturn(buildState("FOL-2026-00007", 0));
+        when(getCalculationResultUseCase.get("FOL-2026-00007"))
+                .thenThrow(new RuntimeException("Calculation result not found"));
+
+        // WHEN
+        List<FolioSummary> result = useCase.listFolios();
+
+        // THEN
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).commercialPremium()).isNull();
+    }
+
+    // --- Helpers ---
 
     private QuoteState buildState(String folioNumber, int completionPct) {
         QuoteSections sections = new QuoteSections(
                 SectionStatus.PENDING, SectionStatus.PENDING,
                 SectionStatus.PENDING, SectionStatus.PENDING, SectionStatus.PENDING);
         return new QuoteState(folioNumber, "CREATED", completionPct, sections, 1L, NOW);
+    }
+
+    private CalculationResult buildCalculationResult(String folioNumber, BigDecimal commercialPremium) {
+        return new CalculationResult(folioNumber, commercialPremium.multiply(new BigDecimal("0.9")),
+                commercialPremium, List.of(), NOW, 1L);
     }
 }
