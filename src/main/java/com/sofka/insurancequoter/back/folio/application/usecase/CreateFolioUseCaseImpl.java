@@ -5,24 +5,43 @@ import com.sofka.insurancequoter.back.folio.domain.model.QuoteStatus;
 import com.sofka.insurancequoter.back.folio.domain.port.in.CreateFolioUseCase;
 import com.sofka.insurancequoter.back.folio.domain.port.out.CoreServiceClient;
 import com.sofka.insurancequoter.back.folio.domain.port.out.QuoteRepository;
-import lombok.RequiredArgsConstructor;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 
 import java.time.Instant;
 import java.util.Optional;
 
 // Orchestrates idempotency check → reference validation → folio generation → persistence
-@RequiredArgsConstructor
 public class CreateFolioUseCaseImpl implements CreateFolioUseCase {
 
     private final QuoteRepository quoteRepository;
     private final CoreServiceClient coreServiceClient;
+    private final Counter newFolioCounter;
+    private final Counter existingFolioCounter;
+
+    public CreateFolioUseCaseImpl(QuoteRepository quoteRepository,
+                                   CoreServiceClient coreServiceClient,
+                                   MeterRegistry meterRegistry) {
+        this.quoteRepository = quoteRepository;
+        this.coreServiceClient = coreServiceClient;
+        this.newFolioCounter = Counter.builder("quotes.created")
+                .tag("outcome", "new")
+                .description("New folios created")
+                .register(meterRegistry);
+        this.existingFolioCounter = Counter.builder("quotes.created")
+                .tag("outcome", "existing")
+                .description("Existing folios returned (idempotency)")
+                .register(meterRegistry);
+    }
 
     @Override
+    @io.micrometer.observation.annotation.Observed(name = "folio.create")
     public FolioCreationResult createFolio(CreateFolioCommand command) {
         // Step 1: idempotency — return existing CREATED folio if found
         Optional<Quote> existing =
                 quoteRepository.findActiveBySubscriberAndAgent(command.subscriberId(), command.agentCode());
         if (existing.isPresent()) {
+            existingFolioCounter.increment();
             return new FolioCreationResult(existing.get(), false);
         }
 
@@ -55,6 +74,7 @@ public class CreateFolioUseCaseImpl implements CreateFolioUseCase {
         Quote saved = quoteRepository.save(newQuote);
 
         // Step 6: return result flagged as newly created
+        newFolioCounter.increment();
         return new FolioCreationResult(saved, true);
     }
 }

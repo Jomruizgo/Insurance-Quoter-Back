@@ -8,6 +8,9 @@ import com.sofka.insurancequoter.back.coverage.domain.port.in.SaveCoverageOption
 import com.sofka.insurancequoter.back.coverage.domain.port.out.CoverageOptionRepository;
 import com.sofka.insurancequoter.back.coverage.domain.port.out.QuoteLookupPort;
 import com.sofka.insurancequoter.back.coverage.domain.service.CoverageDerivationService;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.observation.annotation.Observed;
 
 import java.util.HashSet;
 import java.util.List;
@@ -20,16 +23,22 @@ public class SaveCoverageOptionsUseCaseImpl implements SaveCoverageOptionsUseCas
     private final QuoteLookupPort quoteLookupPort;
     private final CoverageOptionRepository coverageOptionRepository;
     private final CoverageDerivationService coverageDerivationService;
+    private final Counter savedCounter;
 
     public SaveCoverageOptionsUseCaseImpl(QuoteLookupPort quoteLookupPort,
                                           CoverageOptionRepository coverageOptionRepository,
-                                          CoverageDerivationService coverageDerivationService) {
+                                          CoverageDerivationService coverageDerivationService,
+                                          MeterRegistry meterRegistry) {
         this.quoteLookupPort = quoteLookupPort;
         this.coverageOptionRepository = coverageOptionRepository;
         this.coverageDerivationService = coverageDerivationService;
+        this.savedCounter = Counter.builder("coverage.options.saved")
+                .description("Coverage option sets saved")
+                .register(meterRegistry);
     }
 
     @Override
+    @Observed(name = "coverage.options.save")
     public CoverageOptionsResponse saveCoverageOptions(SaveCoverageOptionsCommand command) {
         quoteLookupPort.assertFolioExists(command.folioNumber());
         quoteLookupPort.assertVersionMatches(command.folioNumber(), command.version());
@@ -61,7 +70,7 @@ public class SaveCoverageOptionsUseCaseImpl implements SaveCoverageOptionsUseCas
         List<CoverageOption> saved = coverageOptionRepository.replaceAll(command.folioNumber(), enriched);
         long newVersion = quoteLookupPort.getCurrentVersion(command.folioNumber());
         java.time.Instant updatedAt = quoteLookupPort.getUpdatedAt(command.folioNumber());
-
+        savedCounter.increment();
         return new CoverageOptionsResponse(command.folioNumber(), saved, updatedAt, newVersion);
     }
 }

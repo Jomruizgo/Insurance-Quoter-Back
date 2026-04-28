@@ -9,10 +9,11 @@ import com.sofka.insurancequoter.back.coverage.domain.port.out.QuoteLookupPort;
 import com.sofka.insurancequoter.back.coverage.domain.service.CoverageDerivationService;
 import com.sofka.insurancequoter.back.location.application.usecase.FolioNotFoundException;
 import com.sofka.insurancequoter.back.location.application.usecase.VersionConflictException;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -42,8 +43,14 @@ class SaveCoverageOptionsUseCaseImplTest {
     @Mock
     private CoverageDerivationService coverageDerivationService;
 
-    @InjectMocks
     private SaveCoverageOptionsUseCaseImpl useCase;
+
+    @BeforeEach
+    void setUp() {
+        useCase = new SaveCoverageOptionsUseCaseImpl(
+                quoteLookupPort, coverageOptionRepository, coverageDerivationService,
+                new SimpleMeterRegistry());
+    }
 
     private static final String FOLIO = "FOL-2026-00042";
 

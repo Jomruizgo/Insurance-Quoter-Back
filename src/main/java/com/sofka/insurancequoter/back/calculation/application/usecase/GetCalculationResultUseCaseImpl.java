@@ -14,6 +14,7 @@ public class GetCalculationResultUseCaseImpl implements GetCalculationResultUseC
     }
 
     @Override
+    @io.micrometer.observation.annotation.Observed(name = "calculation.result.get")
     public CalculationResult get(String folioNumber) {
         return repository.find(folioNumber)
                 .orElseThrow(() -> new CalculationResultNotFoundException(folioNumber));

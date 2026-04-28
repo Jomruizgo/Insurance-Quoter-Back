@@ -15,6 +15,7 @@ import com.sofka.insurancequoter.back.coverage.infrastructure.adapter.out.persis
 import com.sofka.insurancequoter.back.coverage.infrastructure.adapter.out.persistence.repositories.CoverageOptionJpaRepository;
 import com.sofka.insurancequoter.back.folio.infrastructure.adapter.out.persistence.repositories.QuoteJpaRepository;
 import com.sofka.insurancequoter.back.location.infrastructure.adapter.out.persistence.repositories.LocationJpaRepository;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -67,8 +68,9 @@ public class CoverageConfig {
     @Bean
     public SaveCoverageOptionsUseCase saveCoverageOptionsUseCase(
             CoverageOptionJpaAdapter adapter,
-            CoverageDerivationService coverageDerivationService) {
-        return new SaveCoverageOptionsUseCaseImpl(adapter, adapter, coverageDerivationService);
+            CoverageDerivationService coverageDerivationService,
+            MeterRegistry meterRegistry) {
+        return new SaveCoverageOptionsUseCaseImpl(adapter, adapter, coverageDerivationService, meterRegistry);
     }
 
     @Bean

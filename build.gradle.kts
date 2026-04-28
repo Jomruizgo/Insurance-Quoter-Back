@@ -29,6 +29,12 @@ dependencies {
     implementation("org.flywaydb:flyway-core")
     implementation("org.flywaydb:flyway-database-postgresql")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springdocVersion")
+
+    // Observability: actuator endpoints + Micrometer tracing (OTel bridge) + Prometheus metrics
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("io.micrometer:micrometer-tracing-bridge-otel")
+    implementation("io.opentelemetry:opentelemetry-exporter-otlp")
+    implementation("io.micrometer:micrometer-registry-prometheus")
     compileOnly("org.projectlombok:lombok")
     developmentOnly("org.springframework.boot:spring-boot-docker-compose")
     runtimeOnly("org.postgresql:postgresql")
