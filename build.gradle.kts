@@ -30,10 +30,11 @@ dependencies {
     implementation("org.flywaydb:flyway-database-postgresql")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springdocVersion")
 
-    // Observability: actuator endpoints + Micrometer tracing (OTel bridge) + Prometheus metrics
+    // Observability: actuator endpoints + native OTel tracing + Prometheus metrics
+    // spring-boot-starter-opentelemetry is the SB4 native approach: wires OTel SDK
+    // and exposes management.opentelemetry.tracing.export.otlp.* properties automatically.
     implementation("org.springframework.boot:spring-boot-starter-actuator")
-    implementation("io.micrometer:micrometer-tracing-bridge-otel")
-    implementation("io.opentelemetry:opentelemetry-exporter-otlp")
+    implementation("org.springframework.boot:spring-boot-starter-opentelemetry")
     implementation("io.micrometer:micrometer-registry-prometheus")
     compileOnly("org.projectlombok:lombok")
     developmentOnly("org.springframework.boot:spring-boot-docker-compose")
