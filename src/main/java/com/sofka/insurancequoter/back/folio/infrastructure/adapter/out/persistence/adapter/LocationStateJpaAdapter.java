@@ -21,7 +21,7 @@ public class LocationStateJpaAdapter implements LocationStateReader {
     public LocationStateSummary readByFolioNumber(String folioNumber) {
         return quoteJpaRepository.findByFolioNumber(folioNumber)
                 .map(quote -> {
-                    List<LocationJpa> locations = locationJpaRepository.findByQuoteId(quote.getId());
+                    List<LocationJpa> locations = locationJpaRepository.findByQuoteIdAndActiveTrue(quote.getId());
                     long completeCount = locations.stream()
                             .filter(l -> "COMPLETE".equals(l.getValidationStatus()))
                             .count();

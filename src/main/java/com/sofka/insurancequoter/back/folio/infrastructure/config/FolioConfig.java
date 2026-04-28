@@ -15,6 +15,7 @@ import com.sofka.insurancequoter.back.folio.domain.port.out.QuoteRepository;
 import com.sofka.insurancequoter.back.folio.domain.port.out.QuoteStateQuery;
 import com.sofka.insurancequoter.back.folio.infrastructure.adapter.out.http.adapter.CoreServiceClientAdapter;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.observation.ObservationRegistry;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,9 +25,12 @@ import org.springframework.web.client.RestClient;
 public class FolioConfig {
 
     @Bean
-    public RestClient coreRestClient(@Value("${core.service.base-url}") String baseUrl) {
+    public RestClient coreRestClient(
+            ObservationRegistry observationRegistry,
+            @Value("${core.service.base-url}") String baseUrl) {
         return RestClient.builder()
                 .baseUrl(baseUrl)
+                .observationRegistry(observationRegistry)
                 .build();
     }
 

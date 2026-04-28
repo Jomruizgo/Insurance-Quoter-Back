@@ -43,7 +43,7 @@ class CalculationServiceTest {
             BigDecimal.valueOf(1.16)      // commercialFactor
     );
 
-    private static final Set<String> TARIFABLE_CODES = Set.of("GUA-FIRE", "GUA-FIRE-CONT", "GUA-THEFT");
+    private static final Set<String> TARIFABLE_CODES = Set.of("GUA-FIRE", "GUA-CONT", "GUA-THEFT");
 
     @BeforeEach
     void setUp() {
@@ -178,10 +178,10 @@ class CalculationServiceTest {
 
     @Test
     void calculateLocation_fireContents_returnsInsuredValueTimesRate() {
-        // GIVEN — GUA-FIRE-CONT: 500,000 × 0.0012 = 600.00
-        Set<String> codes = Set.of("GUA-FIRE", "GUA-FIRE-CONT");
+        // GIVEN — GUA-CONT: 500,000 × 0.0012 = 600.00
+        Set<String> codes = Set.of("GUA-FIRE", "GUA-CONT");
         Location location = locationWith("06600", "FK-001",
-                List.of(new Guarantee("GUA-FIRE-CONT", BigDecimal.valueOf(500_000))));
+                List.of(new Guarantee("GUA-CONT", BigDecimal.valueOf(500_000))));
         // WHEN
         PremiumByLocation result = calculationService.calculateLocation(location, TARIFF, codes);
         // THEN
@@ -190,7 +190,7 @@ class CalculationServiceTest {
     }
 
     @Test
-    void calculateLocation_fireContents_returnsZero_whenNoGUAFIRECONTGuarantee() {
+    void calculateLocation_fireContents_returnsZero_whenNoGUACONTGuarantee() {
         // GIVEN — only GUA-FIRE
         Location location = locationWith("06600", "FK-001",
                 List.of(new Guarantee("GUA-FIRE", BigDecimal.valueOf(1_000_000))));

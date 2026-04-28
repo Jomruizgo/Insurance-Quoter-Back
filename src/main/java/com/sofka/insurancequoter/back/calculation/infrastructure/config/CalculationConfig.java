@@ -23,6 +23,7 @@ import com.sofka.insurancequoter.back.folio.infrastructure.adapter.out.persisten
 import com.sofka.insurancequoter.back.location.infrastructure.adapter.out.persistence.mappers.LocationPersistenceMapper;
 import com.sofka.insurancequoter.back.location.infrastructure.adapter.out.persistence.repositories.LocationJpaRepository;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.observation.ObservationRegistry;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -42,6 +43,7 @@ public class CalculationConfig {
 
     @Bean
     public TariffClient tariffClient(
+            ObservationRegistry observationRegistry,
             @Value("${core.service.base-url:http://localhost:8081}") String baseUrl,
             @Value("${core.service.connect-timeout-ms:5000}") int connectTimeoutMs,
             @Value("${core.service.read-timeout-ms:10000}") int readTimeoutMs) {
@@ -51,6 +53,7 @@ public class CalculationConfig {
         RestClient restClient = RestClient.builder()
                 .baseUrl(baseUrl)
                 .requestFactory(factory)
+                .observationRegistry(observationRegistry)
                 .build();
         return new TariffClientAdapter(restClient);
     }
