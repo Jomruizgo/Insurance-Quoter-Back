@@ -13,26 +13,30 @@ Backend del cotizador de seguros de daños. Microservicio responsable de la gest
 | Flyway | 11.x |
 | Lombok | — |
 | Springdoc OpenAPI | 2.8.x |
+| Micrometer + OTel Bridge | — |
+| Prometheus | 2.51 |
+| Jaeger | 1.57 |
+| Grafana | 10.4 |
 
 Arquitectura: **Hexagonal (Ports & Adapters)** con bounded contexts `folio`, `location`, `coverage`, `calculation`.
 
 ## Requisitos previos
 
 - Java 21+
-- Docker (para PostgreSQL vía Spring Boot Docker Compose)
-- Variables de entorno: `DB_NAME`, `DB_USERNAME`, `DB_PASSWORD`
+- Docker Desktop corriendo
+- Variables de entorno: `DB_NAME`, `DB_USERNAME`, `DB_PASSWORD` (ver `.env` en el directorio padre `Insurance-Quoter/`)
 
 El servicio también consume el **core service** (`plataforma-core-ohs`) en `http://localhost:8081`. Debe estar levantado para que los endpoints de folios y cálculo funcionen.
 
 ## Ejecutar en local
 
 ```bash
-# Desde Insurance-Quoter-Back/
-DB_NAME=insurance_quoter_db DB_USERNAME=quoter DB_PASSWORD=quoter123 \
-  ./gradlew bootRun
-```
+# 1. Levantar infraestructura (PostgreSQL, Jaeger, Prometheus, Grafana)
+docker compose up -d
 
-Spring Boot Docker Compose levanta automáticamente el contenedor de PostgreSQL al arrancar y lo detiene al parar.
+# 2. Arrancar la aplicación (desde Insurance-Quoter-Back/)
+./gradlew bootRun
+```
 
 El backend queda disponible en `http://localhost:8080`.
 
@@ -138,6 +142,22 @@ Cada bounded context sigue la estructura hexagonal:
     └── config/         ← Wiring de beans y configuración
 ```
 
+## Observabilidad
+
+Los tres pilares están implementados (SPEC-008):
+
+| Pilar | Herramienta | Acceso |
+|-------|------------|--------|
+| Métricas | Prometheus + Grafana | `http://localhost:9090` / `http://localhost:3000` |
+| Trazas | Jaeger (OTLP gRPC) | `http://localhost:16687` |
+| Logs | Logback con `traceId`/`spanId` en MDC | consola / archivo |
+
+Grafana: usuario `admin`, contraseña `admin`. Prometheus y Jaeger ya están configurados como datasources.
+
+Métricas expuestas en `/actuator/prometheus`. El endpoint `/actuator/health` muestra estado de DB.
+
+> **Nota:** Jaeger de este back corre en puertos `16687` / `4319` / `4320` para no colisionar con `insurance-quoter-core` que usa `16686` / `4317` / `4318`.
+
 ## Variables de entorno
 
 | Variable | Default | Descripción |
@@ -150,3 +170,5 @@ Cada bounded context sigue la estructura hexagonal:
 | `core.service.base-url` | `http://localhost:8081` | URL base del core service |
 | `core.service.connect-timeout-ms` | `5000` | Timeout de conexión al core (ms) |
 | `core.service.read-timeout-ms` | `10000` | Timeout de lectura al core (ms) |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | `http://localhost:4319` | Endpoint OTLP gRPC para Jaeger |
+| `TRACING_SAMPLING_PROBABILITY` | `1.0` | Proporción de trazas exportadas (0.0–1.0) |

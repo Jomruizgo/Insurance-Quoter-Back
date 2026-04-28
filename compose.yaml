@@ -7,3 +7,29 @@ services:
       - 'POSTGRES_PASSWORD=${DB_PASSWORD}'
     ports:
       - '5432:5432'
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.57
+    ports:
+      - '16687:16686'   # UI  (16687 avoids conflict with insurance-quoter-core on 16686)
+      - '4319:4317'     # OTLP gRPC (4319 avoids conflict with core on 4317)
+      - '4320:4318'     # OTLP HTTP (4320 avoids conflict with core on 4318)
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    ports:
+      - '9090:9090'
+    volumes:
+      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml
+
+  grafana:
+    image: grafana/grafana:10.4.2
+    ports:
+      - '3000:3000'
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - ./observability/grafana/datasources:/etc/grafana/provisioning/datasources
+      - ./observability/grafana/dashboards:/etc/grafana/provisioning/dashboards

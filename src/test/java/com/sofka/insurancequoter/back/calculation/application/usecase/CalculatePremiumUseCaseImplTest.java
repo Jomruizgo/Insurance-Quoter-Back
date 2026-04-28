@@ -81,7 +81,8 @@ class CalculatePremiumUseCaseImplTest {
         calculationService = new CalculationService();
         useCase = new CalculatePremiumUseCaseImpl(
                 quoteCalculationReader, calculationResultRepository,
-                tariffClient, guaranteeCatalogClient, calculationService
+                tariffClient, guaranteeCatalogClient, calculationService,
+                new io.micrometer.core.instrument.simple.SimpleMeterRegistry()
         );
     }
 

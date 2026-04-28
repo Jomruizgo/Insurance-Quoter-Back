@@ -84,7 +84,7 @@ class QuoteLayoutJpaAdapterTest {
         QuoteJpa jpa = buildQuoteJpa("FOL-2026-00042", null, null, 1L);
         QuoteLayoutData inputData = new QuoteLayoutData(1L, "FOL-2026-00042", 3, "MULTIPLE", 1L, NOW);
         when(quoteJpaRepository.findById(1L)).thenReturn(Optional.of(jpa));
-        when(quoteJpaRepository.save(any(QuoteJpa.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(quoteJpaRepository.saveAndFlush(any(QuoteJpa.class))).thenAnswer(inv -> inv.getArgument(0));
         when(mapper.toQuoteLayoutData(any())).thenReturn(inputData);
 
         // WHEN
@@ -92,7 +92,7 @@ class QuoteLayoutJpaAdapterTest {
 
         // THEN
         ArgumentCaptor<QuoteJpa> captor = ArgumentCaptor.forClass(QuoteJpa.class);
-        verify(quoteJpaRepository).save(captor.capture());
+        verify(quoteJpaRepository).saveAndFlush(captor.capture());
         QuoteJpa persisted = captor.getValue();
         assertThat(persisted.getNumberOfLocations()).isEqualTo(3);
         assertThat(persisted.getLocationType()).isEqualTo("MULTIPLE");

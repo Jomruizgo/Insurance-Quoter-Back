@@ -13,6 +13,7 @@ import com.sofka.insurancequoter.back.folio.domain.port.out.LocationStateReader;
 import com.sofka.insurancequoter.back.folio.domain.port.out.QuoteRepository;
 import com.sofka.insurancequoter.back.folio.domain.port.out.QuoteStateQuery;
 import com.sofka.insurancequoter.back.folio.infrastructure.adapter.out.http.adapter.CoreServiceClientAdapter;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,8 +36,9 @@ public class FolioConfig {
 
     @Bean
     public CreateFolioUseCase createFolioUseCase(QuoteRepository quoteRepository,
-                                                  CoreServiceClient coreServiceClient) {
-        return new CreateFolioUseCaseImpl(quoteRepository, coreServiceClient);
+                                                  CoreServiceClient coreServiceClient,
+                                                  MeterRegistry meterRegistry) {
+        return new CreateFolioUseCaseImpl(quoteRepository, coreServiceClient, meterRegistry);
     }
 
     @Bean

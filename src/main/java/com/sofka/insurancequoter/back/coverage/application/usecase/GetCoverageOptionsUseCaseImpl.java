@@ -30,6 +30,7 @@ public class GetCoverageOptionsUseCaseImpl implements GetCoverageOptionsUseCase 
     }
 
     @Override
+    @io.micrometer.observation.annotation.Observed(name = "coverage.options.get")
     public CoverageOptionsResponse getCoverageOptions(String folioNumber) {
         quoteLookupPort.assertFolioExists(folioNumber);
 
