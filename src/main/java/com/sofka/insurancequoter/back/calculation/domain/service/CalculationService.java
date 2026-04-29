@@ -65,7 +65,7 @@ public class CalculationService {
         // Intermediate-scale fire sum: avoids propagating rounding error into derived components
         BigDecimal firePremiumIntermediate = sumInsuredValueByCode(location, "GUA-FIRE")
                 .multiply(tariff.fireRate())
-                .add(sumInsuredValueByCode(location, "GUA-FIRE-CONT")
+                .add(sumInsuredValueByCode(location, "GUA-CONT")
                         .multiply(tariff.fireContentsRate()))
                 .setScale(INTERMEDIATE_SCALE, ROUNDING);
 
@@ -130,7 +130,7 @@ public class CalculationService {
     }
 
     private BigDecimal calculateFireContents(Location location, Tariff tariff) {
-        return sumInsuredValueByCode(location, "GUA-FIRE-CONT")
+        return sumInsuredValueByCode(location, "GUA-CONT")
                 .multiply(tariff.fireContentsRate())
                 .setScale(RESULT_SCALE, ROUNDING);
     }

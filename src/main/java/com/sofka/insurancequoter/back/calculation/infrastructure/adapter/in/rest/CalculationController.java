@@ -2,6 +2,7 @@ package com.sofka.insurancequoter.back.calculation.infrastructure.adapter.in.res
 
 import com.sofka.insurancequoter.back.calculation.application.usecase.command.AcceptQuoteCommand;
 import com.sofka.insurancequoter.back.calculation.application.usecase.command.CalculatePremiumCommand;
+import com.sofka.insurancequoter.back.calculation.application.usecase.exception.CalculationResultNotFoundException;
 import com.sofka.insurancequoter.back.calculation.domain.model.AcceptQuoteResult;
 import com.sofka.insurancequoter.back.calculation.domain.model.CalculationResult;
 import com.sofka.insurancequoter.back.calculation.domain.port.in.AcceptQuoteUseCase;
@@ -49,8 +50,12 @@ public class CalculationController implements CalculationApi {
 
     @Override
     public ResponseEntity<CalculationResponse> getCalculationResult(@PathVariable String folio) {
-        CalculationResult result = getCalculationResultUseCase.get(folio);
-        return ResponseEntity.ok(calculationRestMapper.toResponse(result));
+        try {
+            CalculationResult result = getCalculationResultUseCase.get(folio);
+            return ResponseEntity.ok(calculationRestMapper.toResponse(result));
+        } catch (CalculationResultNotFoundException e) {
+            return ResponseEntity.noContent().build();
+        }
     }
 
     @Override
