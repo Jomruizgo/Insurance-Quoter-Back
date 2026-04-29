@@ -28,11 +28,14 @@ public class LocationConfig {
 
     @Bean
     public ZipCodeValidationClient zipCodeValidationClient(
+            io.micrometer.observation.ObservationRegistry observationRegistry,
             @Value("${core.service.base-url:http://localhost:8081}") String baseUrl) {
-        RestClient restClient = RestClient.builder()
-                .baseUrl(baseUrl)
-                .build();
-        return new ZipCodeValidationClientAdapter(restClient);
+        return new ZipCodeValidationClientAdapter(
+                RestClient.builder()
+                        .baseUrl(baseUrl)
+                        .observationRegistry(observationRegistry)
+                        .build()
+        );
     }
 
     @Bean

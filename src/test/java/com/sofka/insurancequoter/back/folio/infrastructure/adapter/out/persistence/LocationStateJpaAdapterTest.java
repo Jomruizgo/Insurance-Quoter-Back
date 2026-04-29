@@ -56,7 +56,7 @@ class LocationStateJpaAdapterTest {
     void readByFolioNumber_withNoLocations_returnsTotalZero() {
         // GIVEN
         when(quoteJpaRepository.findByFolioNumber("FOL-001")).thenReturn(Optional.of(quoteJpa(10L)));
-        when(locationJpaRepository.findByQuoteId(10L)).thenReturn(List.of());
+        when(locationJpaRepository.findByQuoteIdAndActiveTrue(10L)).thenReturn(List.of());
 
         // WHEN
         LocationStateSummary result = adapter.readByFolioNumber("FOL-001");
@@ -71,7 +71,7 @@ class LocationStateJpaAdapterTest {
     void readByFolioNumber_withMixedLocations_returnsCorrectCounts() {
         // GIVEN — 3 locations: 2 COMPLETE, 1 INCOMPLETE (has blocking alerts)
         when(quoteJpaRepository.findByFolioNumber("FOL-001")).thenReturn(Optional.of(quoteJpa(10L)));
-        when(locationJpaRepository.findByQuoteId(10L)).thenReturn(List.of(
+        when(locationJpaRepository.findByQuoteIdAndActiveTrue(10L)).thenReturn(List.of(
                 location("COMPLETE", List.of()),
                 location("COMPLETE", List.of()),
                 location("INCOMPLETE", List.of(new BlockingAlertEmbeddable("MISSING_ZIP_CODE", "Código postal requerido")))
